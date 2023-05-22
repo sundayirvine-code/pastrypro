@@ -3,6 +3,7 @@
 from flask import Flask
 from config import Config
 from routes import bp as routes_bp
+from flask_sqlalchemy import SQLAlchemy
 
 def create_app():
     # Create the Flask application
@@ -10,6 +11,9 @@ def create_app():
     
     # Load configuration
     app.config.from_object(Config)
+
+    # Initialize database
+    db = SQLAlchemy(app)
     
     # Register blueprints
     app.register_blueprint(routes_bp)

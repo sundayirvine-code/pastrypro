@@ -1,6 +1,6 @@
 # routes.py
 
-from flask import Blueprint, render_template, redirect, url_for
+from flask import Blueprint, render_template, redirect, url_for, request
 from forms import RegistrationForm, LoginForm
 
 # Create a blueprint for the routes
@@ -25,7 +25,10 @@ def signup():
 def login():
     form = LoginForm()
     if form.validate_on_submit():
-        # Process the form data (e.g., authenticate user)
+        # Process the form data
+        name = request.form.get('name')
+        email = request.form.get('email')
+        password = request.form.get('password')
         # Redirect to a logged-in page or dashboard
         return redirect(url_for('routes.home'))
     return render_template('login.html', form=form)

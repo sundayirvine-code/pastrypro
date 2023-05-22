@@ -1,6 +1,9 @@
 # config.py
 
+import os
+
 class Config:
     SECRET_KEY = 'your-secret-key'
     DEBUG = True
-    # Add more configuration options as needed
+    SQLALCHEMY_DATABASE_URI = 'sqlite:///your-database-file.db'
+    SQLALCHEMY_TRACK_MODIFICATIONS = False
