@@ -124,6 +124,13 @@ body{
     line-height: 50px;
 }
 
+#register a, #login a{
+    display: block;
+    width: 100%;
+    height: 100%;
+    text-decoration: none;
+}
+
 #about{
     display: flex;
     flex-direction: column;

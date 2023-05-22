@@ -5,11 +5,17 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="shortcut icon" href="/static/images/4fffe162de1745558f5e86e0562785cc.png" type="image/x-icon">
+    <link rel="stylesheet" href="static/styles/signup.css">
     <title>PastryPro | Signup</title>
 </head>
 <body>
     <div class="container">
         <section class="forms">
+            <img src="static/images/logo1.png" alt="site logo">
+            <div class="text">
+                <h1>Hi there!</h1>
+                <p>Create your free account with PastryPro</p>
+            </div>
             <form action="#" method="post">
                 {{ form.csrf_token }}
                 {{ form.username.label }} {{ form.username }}
@@ -18,9 +24,10 @@
                 {{ form.confirm_password.label }} {{ form.confirm_password }}
                 {{ form.submit }}
             </form>
+            <small>Already have an account? <a href="{{ url_for('routes.login') }}" class="btn btn-primary">Log In</a></small>
         </section>
         <section class="image">
-
+            
         </section>
     </div>
 </body>
