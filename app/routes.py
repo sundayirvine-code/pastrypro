@@ -1,7 +1,7 @@
 # routes.py
 
 from flask import Blueprint, render_template, redirect, url_for
-from .forms import RegistrationForm, LoginForm
+from forms import RegistrationForm, LoginForm
 
 # Create a blueprint for the routes
 bp = Blueprint('routes', __name__)
