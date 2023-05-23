@@ -1,10 +1,12 @@
 # app.py
 
 from flask_sqlalchemy import SQLAlchemy
-from flask import Flask, render_template, redirect, url_for, request, flash
+from flask import Flask, render_template, redirect, url_for, request, flash, session, jsonify
 from forms import RegistrationForm, LoginForm
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_migrate import Migrate
+import datetime
+
 
 
 app = Flask(__name__)
@@ -42,6 +44,7 @@ class Product(db.Model):
     price = db.Column(db.Float, nullable=False)
     quantity = db.Column(db.Integer, default=0)
     image_id = db.Column(db.Integer, db.ForeignKey('image.id'))
+    category_id = db.Column(db.Integer, db.ForeignKey('category.id'))
     # Define other product fields as needed
     
     def __repr__(self):
@@ -50,7 +53,6 @@ class Product(db.Model):
 class Category(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(50), nullable=False, unique=True)
-    products = db.relationship('Product', backref='category', lazy=True)
 
     def __repr__(self):
         return f"Category('{self.name}')"
@@ -90,6 +92,9 @@ def login():
         # Check if the user exists and password is correct
         user = User.query.filter_by(email=form.email.data).first()
         if user and user.check_password(form.password.data):
+            # Store the user information in the session
+            session['username'] = user.username
+            session['email'] = user.email
             # Redirect to a logged-in page or dashboard
             return redirect(url_for('inventory'))
         else:
@@ -98,9 +103,31 @@ def login():
 
 @app.route('/inventory')
 def inventory():
-    # Logic to fetch and display products
-    return render_template('inventory.html')
+    # Fetch all products from the database
+    products = Product.query.all()
+    categories = Category.query.all()
+    # Access the 'username' from the session
+    username = session.get('username')
+    email = session.get('email')
+    current_date = datetime.datetime.now().strftime("%d/%m/%Y")
+    return render_template('inventory.html', products=products, categories = categories,username=username, current_date=current_date)
+    
 
+
+@app.route('/category', methods=['POST'])
+def create_category():
+    category_name = request.json['category']
+    new_category = Category(name=category_name)
+
+    try:
+        db.session.add(new_category)
+        db.session.commit()
+        return jsonify(new_category.name), 200
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 500
+    finally:
+        db.session.close()
 if __name__ == '__main__':
     with app.app_context():
         #create tables

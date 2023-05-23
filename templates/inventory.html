@@ -14,28 +14,39 @@
     <div id="container">
         <aside class="aside">
             <h5>CATEGORIES</h5>
-            <ul>
-                <li class="categories">Equipment</li>
-                <li class="categories">Ingredients</li>
-                <li class="categories">Toppings</li>
-                <li class="categories">Packaging</li>
-                <li class="categories">Cleaning</li>
-            </ul>
+            <ul id="categoryList">
+                {% for category in categories %}
+                  <li class="categories">{{ category.name }}</li>
+                {% endfor %}
+              </ul>
+              
             <div class="add-category">
-                <input type="text" id="add-category">
-                <input type="button" value="CREATE">
+                <input id="add-category" type="button" value="Category +" data-bs-toggle="offcanvas" data-bs-target="#offcanvasWithBothOptions" aria-controls="offcanvasWithBothOptions">
+
+                <div class="offcanvas offcanvas-start" data-bs-scroll="true" tabindex="-1" id="offcanvasWithBothOptions" aria-labelledby="offcanvasWithBothOptionsLabel">
+                <div class="offcanvas-header">
+                    <h5 class="offcanvas-title" id="offcanvasWithBothOptionsLabel">Add Custom Categories</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+                </div>
+                <div class="offcanvas-body">
+                    <input type="text" id="catAdd">
+                    <input type="button" value="Create" id="catBtn">
+                    <p class="error"></p>
+                </div>
+                </div>
             </div>
         </aside>
         <main class="main">
             <header class="header">
                 <div class="text">
-                    <h1>Welcome Irvine</h1>
-                    <p>This is your pastry shop inventory management system</p>
+                  <h1>Welcome {{ username }}</h1>
+                  <p>This is your pastry shop inventory management system</p>
                 </div>
                 <div class="date">
-                    14/ 05/ 2022
+                  {{ current_date }}
                 </div>
-            </header>
+              </header>
+              
 
             <section id="overview">
                 <div class="view_title">Analytics Overview</div>
@@ -50,43 +61,63 @@
             <section id="stock-list">
                 <div class="stock">
                     <div class="stock-title">Product Stock List</div>
-                    <div class="add-products">Add Products +</div>
+                    <div class="add-products" data-bs-toggle="offcanvas" data-bs-target="#offcanvasTop" aria-controls="offcanvasTop">
+                        Add Products +
+                        <div class="offcanvas offcanvas-top" tabindex="-1" id="offcanvasTop" aria-labelledby="offcanvasTopLabel">
+                          <div class="offcanvas-header">
+                            <h5 class="offcanvas-title" id="offcanvasTopLabel">Offcanvas top</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+                          </div>
+                          <div class="offcanvas-body">
+                            ...
+                          </div>
+                        </div>
+                    </div>
                 </div>
-                <table class="table table-success table-hover table-striped ">
+                <table class="table table-success table-hover table-striped">
                     <thead>
                       <tr>
                         <th scope="col">#</th>
                         <th scope="col">Name</th>
                         <th scope="col">Category</th>
-                        <th scope="col">SKU</th>
+                        <th scope="col">Qty</th>
                         <th scope="col">Status</th>
                         <th scope="col">Action</th>
                       </tr>
                     </thead>
                     <tbody class="table-group-divider">
-                      <!-- Table rows will be dynamically generated with product data -->
-                      <tr>
-                        <td scope="row">001</td>
-                        <td>Product 1</td>
-                        <td>Category 1</td>
-                        <td>SKU001</td>
-                        <td>In Stock</td>
-                        <td>view product</td>
-                      </tr>
+                      <!-- Iterate over products and dynamically generate table rows -->
+                      {% for product in products %}
                       <tr scope="row">
-                        <td>002</td>
-                        <td>Product 2</td>
-                        <td>Category 2</td>
-                        <td>SKU002</td>
-                        <td>In Stock</td>
+                        <td>{{ loop.index }}</td>
+                        <td>{{ product.name }}</td>
+                        <td>{{ product.category.name }}</td>
+                        <td>{{ product.quantity }}</td>
+                         <!-- Update status based on product quantity -->
+                         <td>
+                            {% if product.quantity <= 0 %}
+                              Out of Stock
+                            {% elif product.quantity < 5 %}
+                                {% if product.quantity > 0 %}
+                                    Critical
+                                {% endif %}
+                            {% elif product.quantity < 10 %}
+                                {% if product.quantity > 5 %}
+                                    Low
+                                {% endif %}
+                            {% else %}
+                              In Stock
+                            {% endif %}
+                          </td>
                         <td>view product</td>
                       </tr>
-                      <!-- Add more rows as needed -->
+                      {% endfor %}
                     </tbody>
                   </table>
-                  
+                               
             </section>
         </main>
     </div>
+    <script src="/static/scripts/create_category.js"></script>
 </body>
 </html>
