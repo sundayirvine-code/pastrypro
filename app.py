@@ -82,7 +82,7 @@ def login():
     return render_template('login.html', form=form)
 
 @app.route('/inventory')
-def products():
+def inventory():
     # Logic to fetch and display products
     return render_template('inventory.html')
 
