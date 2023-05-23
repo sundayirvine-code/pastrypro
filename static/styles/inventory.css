@@ -150,7 +150,7 @@ body{
 }
 
 #stock-list{
-    margin-top: 20px;
+    margin-top: 10px;
     display: flex;
     flex-direction: column;
     overflow: auto;
@@ -159,7 +159,7 @@ body{
 .stock{
     display: flex;
     justify-content: space-between;
-    margin-bottom: 30px;
+    margin-top: 20px;
     align-items: center;
 }
 
@@ -169,8 +169,6 @@ body{
     background-color: #747476;
     border-radius: 35px;
 }
-
-
 
 
 

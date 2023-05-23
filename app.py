@@ -61,7 +61,6 @@ class Category(db.Model):
 class Image(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     image_url = db.Column(db.String(255), nullable=False)
-    product_id = db.Column(db.Integer, db.ForeignKey('product.id'))
     
     def __repr__(self):
         return f"Image('{self.image_url}')"
@@ -112,6 +111,39 @@ def inventory():
     current_date = datetime.datetime.now().strftime("%d/%m/%Y")
     return render_template('inventory.html', products=products, categories = categories,username=username, current_date=current_date)
     
+@app.route("/create_product", methods=["POST"])
+def create_product():
+    # Get the form data from the AJAX request
+    form_data = request.json
+
+    # Perform validation on the form data (you can add your own validation logic here)
+    if not form_data.get("name") or not form_data.get("price") or not form_data.get("quantity") or not form_data.get("category") or not form_data.get("description"):
+        return jsonify({"error": "Please provide all the required fields."}), 400
+
+    # create image
+    new_image = Image(image_url=form_data["image"])
+    # Add the new image to the database session
+    db.session.add(new_image)
+    db.session.commit()
+
+    image = Image.query.filter_by(image_url=form_data["image"]).first()
+
+    # Create a new Product object
+    new_product = Product(
+        name=form_data["name"],
+        price=form_data["price"],
+        quantity=form_data["quantity"],
+        category_id=form_data["category"],
+        image_id=image.id,
+        description=form_data["description"]
+    )
+
+    # Add the new product to the database session
+    db.session.add(new_product)
+    db.session.commit()
+
+    # Return a response indicating success
+    return jsonify({"message": "Product created successfully."}), 200
 
 
 @app.route('/category', methods=['POST'])
