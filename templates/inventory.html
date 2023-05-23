@@ -9,6 +9,85 @@
     <title>Pastry Pro | Inventory</title>
 </head>
 <body>
-    inventory
+    <div id="container">
+        <aside class="aside">
+            <h5>CATEGORIES</h5>
+            <ul>
+                <li class="categories">Equipment</li>
+                <li class="categories">Ingredients</li>
+                <li class="categories">Toppings</li>
+                <li class="categories">Packaging</li>
+                <li class="categories">Cleaning</li>
+            </ul>
+            <div class="add-category">
+                <input type="text" id="add-category">
+                <input type="button" value="CREATE">
+            </div>
+        </aside>
+        <main class="main">
+            <header class="header">
+                <div class="text">
+                    <h1>Welcome Irvine</h1>
+                    <p>This is your pastry shop inventory management system</p>
+                </div>
+                <div class="date">
+
+                </div>
+            </header>
+
+            <section id="overview">
+                <div class="view_title">Analytics Overview</div>
+                <div>
+                    <div class="overview"></div>
+                    <div class="overview"></div>
+                    <div class="overview"></div>
+                    <div class="overview"></div>
+                </div>
+            </section>
+
+            <section id="stock-list">
+                <div class="stock-title">Product Stock List</div>
+                <table>
+                    <thead>
+                      <tr>
+                        <th>Name</th>
+                        <th>Description</th>
+                        <th>Price</th>
+                        <th>Quantity</th>
+                        <th>Category</th>
+                        <th>SKU</th>
+                        <th>Unit</th>
+                        <th>Availability</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <!-- Table rows will be dynamically generated with product data -->
+                      <tr>
+                        <td>Product 1</td>
+                        <td>Description 1</td>
+                        <td>$10.00</td>
+                        <td>50</td>
+                        <td>Category 1</td>
+                        <td>SKU001</td>
+                        <td>Unit 1</td>
+                        <td>In Stock</td>
+                      </tr>
+                      <tr>
+                        <td>Product 2</td>
+                        <td>Description 2</td>
+                        <td>$15.00</td>
+                        <td>20</td>
+                        <td>Category 2</td>
+                        <td>SKU002</td>
+                        <td>Unit 2</td>
+                        <td>In Stock</td>
+                      </tr>
+                      <!-- Add more rows as needed -->
+                    </tbody>
+                  </table>
+                  
+            </section>
+        </main>
+    </div>
 </body>
 </html>
