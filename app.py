@@ -3,6 +3,8 @@
 from flask_sqlalchemy import SQLAlchemy
 from flask import Flask, render_template, redirect, url_for, request, flash
 from forms import RegistrationForm, LoginForm
+from werkzeug.security import generate_password_hash, check_password_hash
+from flask_migrate import Migrate
 
 
 app = Flask(__name__)
@@ -14,19 +16,24 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 # Database setup
 db = SQLAlchemy(app)
-
+migrate = Migrate(app, db)
 
 #models
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(50), unique=True, nullable=False)
     email = db.Column(db.String(120), unique=True, nullable=False)
-    password = db.Column(db.String(100), nullable=False)
+    password_hash = db.Column(db.String(128), nullable=False)
     is_admin = db.Column(db.Boolean, default=False)
-    # Define other user fields as needed
-    
+
     def __repr__(self):
         return f"User('{self.username}', '{self.email}')"
+
+    def set_password(self, password):
+        self.password_hash = generate_password_hash(password)
+
+    def check_password(self, password):
+        return check_password_hash(self.password_hash, password)
 
 class Product(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -54,14 +61,13 @@ class Image(db.Model):
 def home():
     return render_template('index.html')
 
-# Define routes for signup and login
 @app.route('/signup', methods=['GET', 'POST'])
 def signup():
     form = RegistrationForm()
     if form.validate_on_submit():
         # Create a new user based on form data
-        user = User(username=form.username.data, email=form.email.data, password=form.password.data)
-        print(user)
+        user = User(username=form.username.data, email=form.email.data)
+        user.set_password(form.password.data)
         db.session.add(user)
         db.session.commit()
         # Redirect to a success page or login page
@@ -69,12 +75,12 @@ def signup():
     return render_template('signup.html', form=form)
 
 @app.route('/login', methods=['GET', 'POST'])
-def login():  
+def login():
     form = LoginForm()
     if form.validate_on_submit():
         # Check if the user exists and password is correct
         user = User.query.filter_by(email=form.email.data).first()
-        if user and user.password == form.password.data:
+        if user and user.check_password(form.password.data):
             # Redirect to a logged-in page or dashboard
             return redirect(url_for('inventory'))
         else:
