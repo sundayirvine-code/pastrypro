@@ -54,7 +54,7 @@ fetch("/create_product", {
     const newRowHtml = `
         <tr scope="row">
             <td>${productCount}</td>
-            <td>${newProduct.name}</td>
+            <td><a href="/product_details?name=${newProduct.name}&id=${newProduct.id}">${newProduct.name}</a></td>
             <td>${newProduct.category}</td>
             <td>${newProduct.quantity}</td>
             <!-- Update status based on product quantity -->
@@ -63,7 +63,7 @@ fetch("/create_product", {
                   (newProduct.quantity <= 5 ? (newProduct.quantity > 0 ? "Critical" : "") :
                     (newProduct.quantity <= 10 ? (newProduct.quantity > 5 ? "Low" : "") : "In Stock"))}
             </td>
-            <td>view product</td>
+            <td><a href="/product_details?name=${newProduct.name}&id=${newProduct.id}">view product</a></td>
         </tr>
     `;
 

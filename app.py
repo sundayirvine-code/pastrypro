@@ -42,16 +42,16 @@ class Product(db.Model):
     description = db.Column(db.Text, nullable=False)
     price = db.Column(db.Float, nullable=False)
     quantity = db.Column(db.Integer, default=0)
-    image_id = db.Column(db.Integer, db.ForeignKey('image.id'))
-    category_id = db.Column(db.Integer, db.ForeignKey('category.id'))
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id')) 
+    image_id = db.Column(db.Integer, db.ForeignKey('image.id'), nullable=False)
+    category_id = db.Column(db.Integer, db.ForeignKey('category.id'), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False) 
 
     def __repr__(self):
         return f"Product('{self.name}', '{self.price}')"
 
 class Category(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(50), nullable=False, unique=True)
+    name = db.Column(db.String(50), nullable=False, unique=False)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id')) 
 
     def __repr__(self):
@@ -113,12 +113,21 @@ def logout():
     session.pop('email', None)
     return redirect(url_for('home'))
 
+
+def get_category_name(category_id):
+        with app.app_context():
+            user = User.query.filter_by(username=session.get('username')).first()
+            categories = Category.query.filter_by(user_id=user.id).all()
+            category = next((cat for cat in categories if cat.id == category_id), None)
+            return category.name if category else ""
+
 @app.route('/inventory')
 @login_required
 def inventory():
     user = User.query.filter_by(username=session.get('username')).first()
     products = Product.query.filter_by(user_id=user.id).all()
     categories = Category.query.filter_by(user_id=user.id).all()
+    app.jinja_env.globals['get_category_name'] = get_category_name
     return render_template('inventory.html', products=products, categories=categories,
                            username=session.get('username'), current_date=datetime.datetime.now().strftime("%d/%m/%Y"))
 
@@ -156,6 +165,7 @@ def create_product():
     return jsonify({
         "message": "Product created successfully.",
         "product": {
+            "id": new_product.id,
             "name": new_product.name,
             "category_id": new_product.category_id,
             "quantity": new_product.quantity,
@@ -184,6 +194,42 @@ def create_category():
         return jsonify({'error': str(e)}), 500
     finally:
         db.session.close()
+
+@app.route('/product_details', methods=['GET'])
+@login_required
+def product_details():
+    name = request.args.get('name')
+    id = request.args.get('id')
+    user = User.query.filter_by(username=session.get('username')).first()
+
+    product = Product.query.filter_by(name=name, id=id, user_id=user.id).first()
+
+    if product:
+        category = Category.query.filter_by(id=product.category_id, user_id=user.id).first()
+        category_name = category.name if category else None
+
+        product_details = {
+            'name': product.name,
+            'id': product.id,
+            'price': product.price,
+            'description': product.description,
+            'quantity': product.quantity,
+            'category_name': category_name,
+            'user_id': product.user_id,
+        }
+        return render_template('product_details.html', product=product_details)
+    else:
+        return render_template('404.html'), 404
+
+
+
+
+
+
+
+
+
+
 
 if __name__ == '__main__':
     with app.app_context():

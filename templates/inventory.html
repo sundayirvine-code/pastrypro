@@ -36,6 +36,8 @@
                 </div>
                 </div>
             </div>
+
+            <div class="bake">Make Pastry</div>
         </aside>
         <main class="main">
             <header class="header">
@@ -85,11 +87,11 @@
                           <div class="col-6">
                             <label for="inputCategory" class="form-label">Category</label>
                             <select id="inputCategory" class="form-select" required>
-                              <option selected>Choose...</option>
                               {% for category in categories %}
                                 <option value="{{category.id}}">{{category.name}}</option>
                               {% endfor %}
                             </select>
+                            
                           </div>
                           <div class="col-12">
                             <label for="inputImage" class="form-label">Image Url</label>
@@ -127,30 +129,31 @@
                       {% for product in products %}
                       <tr scope="row">
                         <td>{{ loop.index }}</td>
-                        <td>{{ product.name }}</td>
-                        <td>{{ categories[product.category_id - 1].name }}</td>
+                        <td><a href="{{ url_for('product_details', name=product.name, id=product.id) }}">{{ product.name }}</a></td>
+                        <td>{{ get_category_name(product.category_id) }}</td>
                         <td>{{ product.quantity }}</td>
-                         <!-- Update status based on product quantity -->
-                         <td>
-                            {% if product.quantity <= 0 %}
-                              Out of Stock
-                            {% elif product.quantity < 5 %}
-                                {% if product.quantity > 0 %}
-                                    Critical
-                                {% endif %}
-                            {% elif product.quantity < 10 %}
-                                {% if product.quantity > 5 %}
-                                    Low
-                                {% endif %}
-                            {% else %}
-                              In Stock
+                        <!-- Update status based on product quantity -->
+                        <td>
+                          {% if product.quantity <= 0 %}
+                            Out of Stock
+                          {% elif product.quantity < 5 %}
+                            {% if product.quantity > 0 %}
+                              Critical
                             {% endif %}
-                          </td>
-                        <td>view product</td>
+                          {% elif product.quantity < 10 %}
+                            {% if product.quantity > 5 %}
+                              Low
+                            {% endif %}
+                          {% else %}
+                            In Stock
+                          {% endif %}
+                        </td>
+                        <td><a href="{{ url_for('product_details', name=product.name, id=product.id) }}">View Product</a></td>
                       </tr>
                       {% endfor %}
                     </tbody>
                   </table>
+                  
                                
             </section>
         </main>

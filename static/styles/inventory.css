@@ -189,3 +189,15 @@ body{
     color: #ebeeeb;
 }
 
+.bake{
+    padding: 6px;
+    cursor: pointer;
+    width: 100%;
+}
+
+.bake:hover{
+    background-color: #747476;
+    color: #ebeeeb;
+    border-radius: 35px;
+}
+
