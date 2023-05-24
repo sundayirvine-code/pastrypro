@@ -41,8 +41,44 @@ fetch("/create_product", {
 })
 .then(response => response.json())
 .then(data => {
-    // Handle the response from the server
-    console.log(data); // You can customize the behavior based on the response
+    // Access the new product data from the response
+    const newProduct = data.product;
+    console.log(newProduct)
+    // Get the table rows
+    const tableRows = document.querySelectorAll(".table-group-divider tr");
+
+    // Get the number of existing products
+    const productCount = tableRows.length + 1;
+
+    // Generate the HTML for the new table row
+    const newRowHtml = `
+        <tr scope="row">
+            <td>${productCount}</td>
+            <td>${newProduct.name}</td>
+            <td>${newProduct.category}</td>
+            <td>${newProduct.quantity}</td>
+            <!-- Update status based on product quantity -->
+            <td>
+                ${newProduct.quantity <= 0 ? "Out of Stock" :
+                  (newProduct.quantity <= 5 ? (newProduct.quantity > 0 ? "Critical" : "") :
+                    (newProduct.quantity <= 10 ? (newProduct.quantity > 5 ? "Low" : "") : "In Stock"))}
+            </td>
+            <td>view product</td>
+        </tr>
+    `;
+
+    // Append the new row to the table
+    const tableBody = document.querySelector(".table-group-divider");
+    tableBody.innerHTML += newRowHtml;
+
+    // Clear the form input fields
+    document.getElementById("inputName").value = '';
+    document.getElementById("inputPrice").value = '';
+    document.getElementById("inputQuantity").value = '';
+    document.getElementById("inputCategory").value = '';
+    document.getElementById("inputImage").value = '';
+    document.getElementById("inputDescription").value = '';
+    
 })
 .catch(error => {
     console.error("Error:", error);

@@ -15,6 +15,7 @@ document.getElementById('catBtn').addEventListener('click', function() {
         }
         return;
     }
+
   
     // Make an AJAX request to the /category route
     var xhr = new XMLHttpRequest();
@@ -24,9 +25,22 @@ document.getElementById('catBtn').addEventListener('click', function() {
       if (xhr.readyState === 4 && xhr.status === 200) {
         // Category creation successful
         var newCategory = JSON.parse(xhr.responseText);
-        // Add the new category to the list dynamically using Jinja syntax
+
+        // Access the category attributes
+        var categoryId = newCategory.id;
+        var categoryName = newCategory.name;
+        var categoryUserId = newCategory.user_id;
+
+        // Add the new category to the list dynamically
         var categoryList = document.getElementById('categoryList');
-        categoryList.innerHTML += '<li class="categories">' + newCategory + '</li>';
+        categoryList.innerHTML += '<li class="categories">' + categoryName + '</li>';
+
+        // Add the new category as an option to the select element
+        var inputCategory = document.getElementById('inputCategory');
+        var newOption = document.createElement('option');
+        newOption.value = categoryId;
+        newOption.textContent = categoryName;
+        inputCategory.appendChild(newOption);
   
         // Close the offcanvas
         var offcanvas = document.getElementById('offcanvasWithBothOptions');
