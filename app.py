@@ -6,10 +6,13 @@ from forms import RegistrationForm, LoginForm
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_migrate import Migrate
 import datetime
+from flask_login import LoginManager, login_required, current_user, UserMixin
 
 
 
 app = Flask(__name__)
+login_manager = LoginManager(app)
+login_manager.login_view = 'login'
 
 # Configuration
 app.config['SECRET_KEY'] = 'your-secret-key-here'  # Replace with your secret key
@@ -21,7 +24,7 @@ db = SQLAlchemy(app)
 migrate = Migrate(app, db)
 
 #models
-class User(db.Model):
+class User(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(50), unique=True, nullable=False)
     email = db.Column(db.String(120), unique=True, nullable=False)
@@ -45,6 +48,7 @@ class Product(db.Model):
     quantity = db.Column(db.Integer, default=0)
     image_id = db.Column(db.Integer, db.ForeignKey('image.id'))
     category_id = db.Column(db.Integer, db.ForeignKey('category.id'))
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id')) 
     # Define other product fields as needed
     
     def __repr__(self):
@@ -53,6 +57,7 @@ class Product(db.Model):
 class Category(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(50), nullable=False, unique=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id')) 
 
     def __repr__(self):
         return f"Category('{self.name}')"
@@ -65,6 +70,18 @@ class Image(db.Model):
     def __repr__(self):
         return f"Image('{self.image_url}')"
     
+@login_manager.user_loader
+def load_user(user_id):
+    return User.query.get(int(user_id))
+
+# Error handlers
+@app.errorhandler(404)
+def page_not_found(error):
+    return render_template('404.html'), 404
+
+@app.errorhandler(500)
+def internal_server_error(error):
+    return render_template('500.html'), 500
 
 # Define your routes
 @app.route('/')
@@ -100,11 +117,28 @@ def login():
             flash('Invalid username or password', 'danger')
     return render_template('login.html', form=form)
 
+@app.route('/logout')
+@login_required
+def logout():
+    # Clear the user information from the session
+    session.pop('username', None)
+    session.pop('email', None)
+    # Redirect to the login page or any other desired page
+    return redirect(url_for('home'))
+
+
 @app.route('/inventory')
+@login_required
 def inventory():
-    # Fetch all products from the database
-    products = Product.query.all()
-    categories = Category.query.all()
+    # Get the currently logged-in user
+    user = User.query.filter_by(username=session.get('username')).first()
+    
+    # Fetch only the products associated with the user from the database
+    products = Product.query.filter_by(user_id=user.id).all()
+
+    # Fetch only the categories associated with the user from the database
+    categories = Category.query.filter_by(user_id=user.id).all()
+
     # Access the 'username' from the session
     username = session.get('username')
     email = session.get('email')
@@ -112,6 +146,7 @@ def inventory():
     return render_template('inventory.html', products=products, categories = categories,username=username, current_date=current_date)
     
 @app.route("/create_product", methods=["POST"])
+@login_required
 def create_product():
     # Get the form data from the AJAX request
     form_data = request.json
@@ -126,6 +161,9 @@ def create_product():
     db.session.add(new_image)
     db.session.commit()
 
+    # Get the currently logged-in user
+    user = User.query.filter_by(username=session.get('username')).first()
+
     image = Image.query.filter_by(image_url=form_data["image"]).first()
 
     # Create a new Product object
@@ -135,7 +173,8 @@ def create_product():
         quantity=form_data["quantity"],
         category_id=form_data["category"],
         image_id=image.id,
-        description=form_data["description"]
+        description=form_data["description"],
+        user_id=user.id 
     )
 
     # Add the new product to the database session
@@ -147,9 +186,15 @@ def create_product():
 
 
 @app.route('/category', methods=['POST'])
+@login_required
 def create_category():
     category_name = request.json['category']
-    new_category = Category(name=category_name)
+
+    # Get the currently logged-in user
+    user = User.query.filter_by(username=session.get('username')).first()
+
+    # Create a new Category object associated with the user
+    new_category = Category(name=category_name, user_id=user.id)
 
     try:
         db.session.add(new_category)
@@ -160,6 +205,8 @@ def create_category():
         return jsonify({'error': str(e)}), 500
     finally:
         db.session.close()
+
+
 if __name__ == '__main__':
     with app.app_context():
         #create tables

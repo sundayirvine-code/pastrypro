@@ -42,8 +42,13 @@
                   <h1>Welcome {{ username }}</h1>
                   <p>This is your pastry shop inventory management system</p>
                 </div>
-                <div class="date">
-                  {{ current_date }}
+                <div>
+                    <div class="logout">
+                        <a href="{{ url_for('logout') }}">Logout</a>
+                    </div>
+                    <div class="date">
+                    {{ current_date }}
+                    </div>
                 </div>
               </header>
               
