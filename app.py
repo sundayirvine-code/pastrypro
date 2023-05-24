@@ -208,6 +208,8 @@ def product_details():
         category = Category.query.filter_by(id=product.category_id, user_id=user.id).first()
         category_name = category.name if category else None
 
+        image = Image.query.filter_by(id=product.image_id).first()
+        
         product_details = {
             'name': product.name,
             'id': product.id,
@@ -216,6 +218,7 @@ def product_details():
             'quantity': product.quantity,
             'category_name': category_name,
             'user_id': product.user_id,
+            'image_url': image.image_url
         }
         return render_template('product_details.html', product=product_details)
     else:

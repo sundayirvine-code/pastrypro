@@ -87,6 +87,7 @@
                           <div class="col-6">
                             <label for="inputCategory" class="form-label">Category</label>
                             <select id="inputCategory" class="form-select" required>
+                                <option value=""></option>
                               {% for category in categories %}
                                 <option value="{{category.id}}">{{category.name}}</option>
                               {% endfor %}
