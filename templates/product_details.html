@@ -4,15 +4,153 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/static/styles/product_details.css">
+    <script src="https://kit.fontawesome.com/c82ebbdf53.js" crossorigin="anonymous"></script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-KK94CHFLLe+nY2dmCWGMq91rCGa5gtU4mk92HdvYe+M/SXH301p5ILy+dN9+nJOZ" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ENjdO4Dr2bkBIFxQpeoTz1HIcje39Wm4jDKdf19U8gI4ddQ3GYNS7NTKfAdVQSZe" crossorigin="anonymous"></script>
     <title>Product Details</title>
 </head>
 <body>
-    <div class="container">
-        <section id="image">
-            <a href="{{ url_for('inventory') }}">Back to Inventory</a>
-            <img src="{{product.image_url}}" alt="" srcset="">
-        </section>
-        <section id="details">Details</section>
+    
+    <div class="offcanvas offcanvas-start" data-bs-scroll="true" tabindex="-1" id="offcanvasWithBothOptions" aria-labelledby="offcanvasWithBothOptionsLabel">
+        <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="offcanvasWithBothOptionsLabel">Edit Product:  {{product.name}}</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+        </div>
+        <div class="offcanvas-body">
+            <form class="row g-3">
+                <div class="col-md-6">
+                  <label for="inputName" class="form-label">Name</label>
+                  <input type="text" class="form-control" id="inputName" required value="{{product.name}}">
+                </div>
+                <div class="col-md-6">
+                  <label for="inputPrice" class="form-label">Price</label>
+                  <input type="number" step="0.01" class="form-control" id="inputPrice" required value="{{product.price}}">
+                </div>
+                <div class="col-md-6">
+                  <label for="inputQuantity" class="form-label">Quantity</label>
+                  <input type="number" class="form-control" id="inputQuantity" required value="{{product.quantity}}">
+                </div>
+                  <div class="col-6">
+                    <label for="inputCategory" class="form-label">Category</label>
+                    <select id="inputCategory" class="form-select" required>
+                        <option value="{{product.category_id}}">{{product.category_name}}</option>
+                      {% for category in product.categories %}
+                        {% if category.id != product.category_id %}
+                        <option value="{{category.id}}">{{category.name}}</option>
+                        {% endif %}
+                      {% endfor %}
+                    </select>
+                    
+                  </div>
+                  <div class="col-12">
+                    <label for="inputImage" class="form-label">Image Url</label>
+                    <input type="text" class="form-control" id="inputImage" value="{{product.image_url}}">
+                  </div>
+                <div class="col-md-12">
+                    <label for="inputDescription" class="form-label">Description</label>
+                    <textarea class="form-control" id="inputDescription" required rows="5" >{{product.description}}</textarea>
+                  </div>
+                <div class="col-12">
+                  <button type="submit" class="btn btn-primary create_product" id="createProductBtn">Update Product</button>
+                </div>
+              </form>
+        </div>
     </div>
+    <div class="card mb-3">
+        <div class="row g-0">
+          <div class="col-md-6">
+            <img src="{{product.image_url}}" alt="Product image" class="img-fluid rounded-start" style="height: 100%;">
+          </div>
+          <div class="col-md-6">
+            <div class="card-body">
+              <div class="tbs">
+                <h2 class="card-title">{{product.name}}</h2>
+                <div>
+                    <div>
+                        <a href="{{ url_for('inventory') }}"><i class="fa-solid fa-arrow-left"></i>  Inventory</a>
+                    </div>
+                    <div>
+                        <span><i data-bs-toggle="offcanvas" data-bs-target="#offcanvasWithBothOptions" aria-controls="offcanvasWithBothOptions" class="fa-solid fa-pencil" style="cursor: pointer;"></i></span>
+                    </div>
+                </div>
+              </div>
+              <h5>{{product.category_name}}</h5>
+              <div id="qp">
+                <div>
+                    <p class="pt">Price</p>
+                    <p class="product">{{product.price}}</p>
+                  </div>
+                  <div>
+                    <p class="qt">Quantity</p>
+                    <p class="quantity">{{product.quantity}}</p>
+                  </div>
+              </div>
+              <div class="overflow">
+                <p class="card-text">{{product.description}}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+<!--
+      <div class="offcanvas offcanvas-start" data-bs-scroll="true" tabindex="-1" id="offcanvasWithBothOptions" aria-labelledby="offcanvasWithBothOptionsLabel">
+        <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="offcanvasWithBothOptionsLabel">Backdrop with scrolling</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+        </div>
+        <div class="offcanvas-body">
+            <p>Try scrolling the rest of the page to see this option in action.</p>
+        </div>
+        </div>
+        <div id="container">
+            <section id="image">
+                <img src="{{product.image_url}}" alt="Product image">
+            </section>
+            <section id="details">
+               <div class="back">
+                <a href="{{ url_for('inventory') }}"><i class="fa-solid fa-arrow-left"></i>    Back to Inventory</a>
+                <span><i data-bs-toggle="offcanvas" data-bs-target="#offcanvasWithBothOptions" aria-controls="offcanvasWithBothOptions" class="fa-solid fa-pencil"></i></span>
+               </div>
+               <div>
+                <p class="category">{{product.category_name}}</p>
+                <h1 class="name">{{product.name}}</h1>
+                <div class="priceQ">
+                    <div>
+                        <p>Price</p>
+                        <h3 class="price">{{product.price}}</h3>
+                    </div>
+                    <div>
+                        <p>Quantity</p>
+                        <h3 class="quantity">{{product.quantity}}</h3>
+                    </div>
+                </div>
+               </div>
+               <div>
+                <p class="description">{{product.description}}</p>
+               </div>
+            </section>
+        </div>-->
 </body>
+<style>
+    #qp{
+        display: flex;
+    }
+    .pt, .product{
+        margin: 0;
+        margin-right: 10px;
+    }
+
+    .qt, .quantity{
+        margin: 0;
+    }
+    .card-text{
+        font-size: 14px;
+    }
+
+    .tbs{
+        display: flex;
+        justify-content: space-between;
+    }
+</style>
 </html>

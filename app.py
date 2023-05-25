@@ -201,13 +201,13 @@ def product_details():
     name = request.args.get('name')
     id = request.args.get('id')
     user = User.query.filter_by(username=session.get('username')).first()
-
+    categories = Category.query.filter_by(user_id=user.id).all()
     product = Product.query.filter_by(name=name, id=id, user_id=user.id).first()
 
     if product:
         category = Category.query.filter_by(id=product.category_id, user_id=user.id).first()
         category_name = category.name if category else None
-
+        category_id = category.id
         image = Image.query.filter_by(id=product.image_id).first()
         
         product_details = {
@@ -217,8 +217,10 @@ def product_details():
             'description': product.description,
             'quantity': product.quantity,
             'category_name': category_name,
+            'category_id': category_id,
             'user_id': product.user_id,
-            'image_url': image.image_url
+            'image_url': image.image_url,
+            'categories': categories
         }
         return render_template('product_details.html', product=product_details)
     else:
