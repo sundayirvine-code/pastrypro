@@ -120,6 +120,17 @@ def get_category_name(category_id):
             categories = Category.query.filter_by(user_id=user.id).all()
             category = next((cat for cat in categories if cat.id == category_id), None)
             return category.name if category else ""
+        
+def get_product_status(quantity):
+    if quantity <= 0:
+        return 'Out of Stock'
+    elif quantity <= 5 and quantity > 0:
+        return 'Critical'
+    elif quantity <= 10 and quantity > 5:
+        return 'Low'
+    else:
+        return 'In Stock'
+
 
 @app.route('/inventory')
 @login_required
@@ -195,46 +206,118 @@ def create_category():
     finally:
         db.session.close()
 
-@app.route('/product_details', methods=['GET'])
+@app.route('/product_details', methods=['GET', 'PUT'])
 @login_required
-def product_details():
-    name = request.args.get('name')
-    id = request.args.get('id')
+def product_details():  
     user = User.query.filter_by(username=session.get('username')).first()
-    categories = Category.query.filter_by(user_id=user.id).all()
-    product = Product.query.filter_by(name=name, id=id, user_id=user.id).first()
-
-    if product:
-        category = Category.query.filter_by(id=product.category_id, user_id=user.id).first()
-        category_name = category.name if category else None
-        category_id = category.id
-        image = Image.query.filter_by(id=product.image_id).first()
+    if request.method == 'GET':
+        id = request.args.get('id')
+        product = Product.query.filter_by(id=id, user_id=user.id).first()
+        if product:
+            image = Image.query.filter_by(id=product.image_id).first()
+            categories = Category.query.filter_by(user_id=user.id).all()
+            category = Category.query.filter_by(id=product.category_id, user_id=user.id).first()
+            category_name = category.name if category else None
+            category_id = category.id
+            
+            product_details = {
+                'name': product.name,
+                'id': product.id,
+                'price': product.price,
+                'description': product.description,
+                'quantity': product.quantity,
+                'category_name': category_name,
+                'category_id': category_id,
+                'user_id': product.user_id,
+                'image_url': image.image_url,
+                'url_id': image.id,
+                'categories': categories
+            }
+            return render_template('product_details.html', product=product_details)
+        else:
+            return render_template('404.html'), 404
         
-        product_details = {
-            'name': product.name,
+    elif request.method == 'PUT':
+        form_data = request.json
+        required_fields = ["name", "price", "quantity", "category", "description"]
+
+        if not all(field in form_data for field in required_fields):
+            return jsonify({"error": "Please provide all the required fields."}), 400
+        
+        product = Product.query.filter_by(id=form_data["productId"], user_id=user.id).first()
+        image = Image.query.filter_by(id=form_data["urlId"]).first()
+
+        if image:
+            image.image_url = form_data["image"]
+            # Commit the changes to the database
+            db.session.commit()
+        else:
+            return render_template('404.html'), 404
+
+        if product:
+            # Update the product information with the new data
+            product.name = form_data["name"]
+            product.price = form_data["price"]
+            product.quantity = form_data["quantity"]
+            product.category_id = form_data["category"]
+            product.description = form_data["description"]
+            product.image_id = form_data["urlId"]
+            # Commit the changes to the database
+            db.session.commit()
+        else:
+            return render_template('404.html'), 404
+
+        # query the new product
+        new_product = Product.query.filter_by(id=form_data
+        ["productId"], user_id=user.id).first()
+
+        # query category
+        new_category = Category.query.filter_by(id=form_data["category"], user_id=user.id).first()
+        categories = Category.query.filter_by(user_id=user.id).all()
+        return jsonify({
+                'name': new_product.name,
+                'product_id': new_product.id,
+                'price': new_product.price,
+                'description': new_product.description,
+                'quantity': new_product.quantity,
+                'category_name': new_category.name,
+                'category_id': new_product.category_id,
+                'user_id': new_product.user_id,
+                'image_url': form_data["image"],
+                'url_id': new_product.image_id,
+                #'categories ': categories 
+        }), 200
+
+@app.route('/category_products', methods=['POST'])
+@login_required
+def category_products():
+    category_id = request.json['id']
+
+    if category_id is None:
+        return jsonify({'error': 'Category ID is missing'}), 400
+
+    user = User.query.filter_by(username=session.get('username')).first()
+    products = Product.query.filter_by(category_id=category_id, user_id=user.id).all()
+
+    product_data = []
+    for product in products:
+        product_info = {
+            'index': products.index(product) + 1,
             'id': product.id,
-            'price': product.price,
-            'description': product.description,
+            'name': product.name,
+            'category': get_category_name(product.category_id),
             'quantity': product.quantity,
-            'category_name': category_name,
-            'category_id': category_id,
-            'user_id': product.user_id,
-            'image_url': image.image_url,
-            'categories': categories
+            'status': get_product_status(product.quantity)
         }
-        return render_template('product_details.html', product=product_details)
-    else:
-        return render_template('404.html'), 404
+        product_data.append(product_info)
+
+    return jsonify(product_data), 200
 
 
 
-
-
-
-
-
-
-
+        
+        
+    
 
 if __name__ == '__main__':
     with app.app_context():
