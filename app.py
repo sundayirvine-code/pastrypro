@@ -4,16 +4,17 @@ from forms import RegistrationForm, LoginForm
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_migrate import Migrate
 import datetime
-from flask_login import LoginManager, login_required, current_user, UserMixin
+from flask_login import LoginManager, login_required, current_user, UserMixin, login_user, logout_user
 
 app = Flask(__name__)
-login_manager = LoginManager(app)
-login_manager.login_view = 'login'
 
 # Configuration
-app.config['SECRET_KEY'] = 'your-secret-key-here'
+app.config['SECRET_KEY'] = '\xce!\x9e\x04\x00\x03\xdf\x88\xf1\x1b@m\xe2\xc6R\xd80\xf6H\x84\xe0e\xc1\x02'
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///database.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
+login_manager = LoginManager(app)
+login_manager.login_view = 'login'
 
 # Database setup
 db = SQLAlchemy(app)
@@ -95,22 +96,27 @@ def signup():
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
+    if current_user.is_authenticated:
+        return redirect(url_for('inventory')) 
     form = LoginForm()
-    if form.validate_on_submit():
-        user = User.query.filter_by(email=form.email.data).first()
-        if user and user.check_password(form.password.data):
-            session['username'] = user.username
-            session['email'] = user.email
-            return redirect(url_for('inventory'))
-        else:
-            flash('Invalid username or password', 'danger')
+
+    if request.method == 'POST':
+        email = request.form['email']
+        password = request.form['password']
+        if form.validate_on_submit():
+            user = User.query.filter_by(email=email).first()
+            if user and user.check_password(password):
+                login_user(user)
+                next_page = request.args.get('next')
+                return redirect(next_page or url_for('inventory'))
+            else:
+                flash('Invalid username or password', 'danger')
     return render_template('login.html', form=form)
 
 @app.route('/logout')
 @login_required
 def logout():
-    session.pop('username', None)
-    session.pop('email', None)
+    logout_user()
     return redirect(url_for('home'))
 
 
