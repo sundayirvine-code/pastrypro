@@ -38,7 +38,7 @@ deactivate () {
 # unset irrelevant variables
 deactivate nondestructive
 
-VIRTUAL_ENV="C:\Users\MALELAH\Desktop\PROJECTS\pastrypro\proenv"
+VIRTUAL_ENV="C:\Users\MALELAH\desktop\pastrypro\proenv"
 export VIRTUAL_ENV
 
 _OLD_VIRTUAL_PATH="$PATH"
