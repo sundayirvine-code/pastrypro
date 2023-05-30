@@ -327,7 +327,11 @@ def category_products():
         return jsonify({'error': 'Category ID is missing'}), 400
 
     user = User.query.filter_by(username=session.get('username')).first()
-    products = Product.query.filter_by(category_id=category_id, user_id=user.id).all()
+    if category_id == -1:
+        products = Product.query.filter_by(user_id=user.id).all()
+    else:
+        products = Product.query.filter_by(category_id=category_id, user_id=user.id).all()
+
 
     product_data = []
     for product in products:
