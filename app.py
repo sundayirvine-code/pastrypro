@@ -65,6 +65,30 @@ class Image(db.Model):
     def __repr__(self):
         return f"Image('{self.image_url}')"
 
+
+class BakedProduct(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), nullable=False)
+    quantity = db.Column(db.Integer, nullable=False)
+    total_price = db.Column(db.Float, nullable=False)
+    date_baked = db.Column(db.DateTime, default=datetime.datetime.utcnow)
+    ingredients = db.relationship('BakedProductIngredient', backref='baked_product', lazy=True)
+
+    def __repr__(self):
+        return f"BakedProduct('{self.name}', '{self.quantity}', '{self.total_price}', '{self.date_baked}')"
+    
+
+class BakedProductIngredient(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    baked_product_id = db.Column(db.Integer, db.ForeignKey('baked_product.id'), nullable=False)
+    product_id = db.Column(db.Integer, db.ForeignKey('product.id'), nullable=False)
+    quantity = db.Column(db.Integer, nullable=False)
+    date_used = db.Column(db.DateTime, default=datetime.datetime.utcnow)
+
+    def __repr__(self):
+        return f"BakedProductIngredient('{self.baked_product_id}', '{self.ingredient_id}', '{self.quantity}')"
+    
+
 @login_manager.user_loader
 def load_user(user_id):
     return User.query.get(int(user_id))
