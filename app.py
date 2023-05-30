@@ -68,6 +68,46 @@ class Image(db.Model):
         return f"Image('{self.image_url}')"
 
 
+class UnitOfMeasurement(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(20), unique=True, nullable=False)
+
+default_units = [
+    {'name': 'grams'},
+    {'name': 'kilograms'},
+    {'name': 'pieces'},
+    {'name': 'meters'},
+    {'name': 'liters'},
+    {'name': 'milliliters'},
+    {'name': 'cups'},
+    {'name': 'teaspoons'},
+    {'name': 'tablespoons'},
+    {'name': 'packets'},
+    {'name': 'slices'},
+    {'name': 'sheets'},
+    {'name': 'rolls'},
+    {'name': 'bars'},
+    {'name': 'cans'},
+    {'name': 'bottles'},
+    {'name': 'jars'},
+    {'name': 'bundles'},
+    {'name': 'boxes'},
+    # Add more units as needed
+]
+
+def seed_unit_of_measurement():
+    for unit_data in default_units:
+        unit = UnitOfMeasurement.query.filter_by(name=unit_data['name']).first()
+        if not unit:
+            unit = UnitOfMeasurement(**unit_data)
+            db.session.add(unit)
+
+    db.session.commit()
+
+# Seed the UnitOfMeasurement table
+with app.app_context():
+    seed_unit_of_measurement()
+
 class BakedProduct(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False)
