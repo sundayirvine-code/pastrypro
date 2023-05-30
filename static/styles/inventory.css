@@ -50,6 +50,7 @@ body{
 }
 
 .aside ul li{
+    color: #ffffff;
     list-style-type: none;
     margin: 5px 0;
     margin-left: 10px;
