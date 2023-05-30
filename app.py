@@ -46,6 +46,8 @@ class Product(db.Model):
     image_id = db.Column(db.Integer, db.ForeignKey('image.id'), nullable=False)
     category_id = db.Column(db.Integer, db.ForeignKey('category.id'), nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False) 
+    unit_of_measurement_id = db.Column(db.Integer, db.ForeignKey('unit_of_measurement.id'), nullable=False)
+    unit_of_measurement = db.relationship('UnitOfMeasurement')
 
     def __repr__(self):
         return f"Product('{self.name}', '{self.price}')"
