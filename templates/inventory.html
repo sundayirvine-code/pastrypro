@@ -17,6 +17,7 @@
         <aside class="aside">
             <h5>CATEGORIES</h5>
             <ul id="categoryList">
+              <li class="categories" id="-1">All Products</li>
                 {% for category in categories %}
                   <li class="categories" id="{{ category.id }}">{{ category.name }}</li>
                 {% endfor %}
