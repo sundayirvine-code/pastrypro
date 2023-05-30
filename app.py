@@ -381,7 +381,6 @@ def bake():
         for ingredient in ingredients:
             product_id = ingredient.get('id')
             product_quantity = ingredient.get('quantity')
-            product_price = Product.query.get(product_id).price
 
             baked_product_ingredient = BakedProductIngredient(
                 baked_product_id=baked_product.id,
@@ -391,7 +390,9 @@ def bake():
             db.session.add(baked_product_ingredient)
 
             # Update product quantity
+            product = Product.query.get(product_id)
             product.quantity -= product_quantity
+            db.session.add(product)
 
         db.session.commit()
 

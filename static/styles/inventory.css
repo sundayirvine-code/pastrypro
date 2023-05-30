@@ -191,14 +191,14 @@ body{
 }
 
 .bake{
-    padding: 6px;
     cursor: pointer;
     width: 100%;
+    margin-left: 10px;
 }
 
-.bake:hover{
-    background-color: #747476;
-    color: #ebeeeb;
-    border-radius: 35px;
+.bake a{
+    color: #ffffff;
+    text-decoration: none;
 }
+
 

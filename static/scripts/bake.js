@@ -5,7 +5,6 @@ $(function() {
       source: "/ingredients/search",
       minLength: 1,
       select: function(event, ui) {
-        console.log(ui)
         addIngredient(ui.item);
         $(this).val('');
         return false;
