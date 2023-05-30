@@ -1,0 +1,28 @@
+body{
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+#container{
+    width: 75vw;
+    height: 600px;
+    display: flex;
+    justify-content: space-between;
+}
+
+#bakeForm{
+    display: flex;
+    flex-direction: column;
+    flex-basis: 60%;
+}
+
+#list{
+    display: flex;
+    flex-direction: column;
+    flex-basis: 35%;
+}
