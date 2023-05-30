@@ -348,7 +348,65 @@ def category_products():
     return jsonify(product_data), 200
 
 
+@app.route('/bake', methods=['GET', 'POST'])
+@login_required
+def bake():
+    if request.method == 'GET':
+        return render_template('bake.html')
+    else:
+        data = request.get_json()
+        pastry_name = data.get('name')
+        quantity = data.get('quantity')
+        ingredients = data.get('ingredients')
+        totalPrice = data.get('totalPrice')
+        # Check ingredient availability
+        for ingredient in ingredients:
+            product_id = ingredient.get('id')
+            product_quantity = ingredient.get('quantity')
 
+            product = Product.query.get(product_id)
+
+            if product is None:
+                return jsonify({"error": f"Product with ID {product_id} not found."}), 404
+
+            if product.quantity < product_quantity:
+                return jsonify({"error": f"Insufficient quantity for product {product.name}."}), 400
+
+        # Create baked product
+        baked_product = BakedProduct(name=pastry_name, quantity=quantity, total_price=totalPrice)
+        db.session.add(baked_product)
+        db.session.flush()
+
+        # Add ingredients to baked product
+        for ingredient in ingredients:
+            product_id = ingredient.get('id')
+            product_quantity = ingredient.get('quantity')
+            product_price = Product.query.get(product_id).price
+
+            baked_product_ingredient = BakedProductIngredient(
+                baked_product_id=baked_product.id,
+                product_id=product_id,
+                quantity=product_quantity,
+            )
+            db.session.add(baked_product_ingredient)
+
+            # Update product quantity
+            product.quantity -= product_quantity
+
+        db.session.commit()
+
+        return jsonify({"message": "Baked product created successfully."}), 200
+    
+
+@app.route('/ingredients/search')
+@login_required
+def search_ingredients():
+    search_term = request.args.get('term', '')
+
+    ingredients = Product.query.filter(Product.name.ilike(f'%{search_term}%')).all()
+    response = [{'id': ingredient.id, 'label': ingredient.name, 'value': ingredient.name, 'price': ingredient.price} for ingredient in ingredients]
+
+    return jsonify(response)
         
         
     
