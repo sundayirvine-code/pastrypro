@@ -43,7 +43,7 @@ class Product(db.Model):
     name = db.Column(db.String(100), nullable=False)
     description = db.Column(db.Text, nullable=False)
     price = db.Column(db.Float, nullable=False)
-    quantity = db.Column(db.Integer, default=0)
+    quantity = db.Column(db.Integer, default=0) #change this to float
     image_id = db.Column(db.Integer, db.ForeignKey('image.id'), nullable=False)
     category_id = db.Column(db.Integer, db.ForeignKey('category.id'), nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False) 
@@ -224,46 +224,55 @@ def inventory():
 def create_product():
     user_id = current_user.id
 
-     # Retrieve form data
+    # Retrieve form data
     form_data = request.json
     required_fields = ["name", "price", "quantity", "category", "description", "unit_id"]
     if not all(field in form_data for field in required_fields):
         return jsonify({"error": "Please provide all the required fields."}), 400
 
-    new_image = Image(image_url=form_data["image"])
-    db.session.add(new_image)
-    db.session.commit()
+    try:
+        new_image = Image(image_url=form_data["image"])
+        db.session.add(new_image)
+        db.session.commit()
 
-    image = Image.query.filter_by(image_url=form_data["image"]).first()
+        image = Image.query.filter_by(image_url=form_data["image"]).first()
 
-    new_product = Product(
-        name=form_data["name"],
-        price=form_data["price"],
-        quantity=form_data["quantity"],
-        category_id=int(form_data["category"]),
-        image_id=image.id,
-        description=form_data["description"],
-        user_id=user_id,
-        unit_of_measurement_id=form_data["unit_id"]
-    )
+        new_product = Product(
+            name=form_data["name"],
+            price=form_data["price"],
+            quantity=form_data["quantity"],
+            category_id=int(form_data["category"]),
+            image_id=image.id,
+            description=form_data["description"],
+            user_id=user_id,
+            unit_of_measurement_id=form_data["unit_id"]
+        )
 
-    
-    new_category = Category.query.filter_by(id=form_data["category"], user_id=user_id).first()
-    category_name = new_category.name if new_category else ""
+        unit_name = get_unit_of_measurement_name(form_data["unit_id"])
+        new_category = Category.query.filter_by(id=form_data["category"], user_id=user_id).first()
+        category_name = new_category.name if new_category else ""
 
-    db.session.add(new_product)
-    db.session.commit()
+        db.session.add(new_product)
+        db.session.commit()
 
-    return jsonify({
-        "message": "Product created successfully.",
-        "product": {
-            "id": new_product.id,
-            "name": new_product.name,
-            "category_id": new_product.category_id,
-            "quantity": new_product.quantity,
-            "category": category_name
-        }
-    }), 200
+        status=get_product_status(form_data["quantity"])
+        return jsonify({
+            "message": "Product created successfully.",
+            "product": {
+                "id": new_product.id,
+                "name": new_product.name,
+                "category_id": new_product.category_id,
+                "quantity": new_product.quantity,
+                "category": category_name,
+                "unit": unit_name,
+                "status": status
+            }
+        }), 200
+
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"error": str(e)}), 500
+
 
 @app.route('/category', methods=['POST'])
 @login_required
@@ -460,7 +469,23 @@ def search_ingredients():
 
     return jsonify(response)
         
-    
+
+@app.route('/delete_product/<int:id>', methods=['DELETE'])
+@login_required
+def delete_product(id):
+    product = Product.query.get_or_404(id)
+
+    # Check if the current user is the owner of the product
+    if product.user_id != current_user.id and not current_user.is_admin:
+        return jsonify(error='Unauthorized'), 403
+
+    try:
+        db.session.delete(product)
+        db.session.commit()
+        return jsonify(message='Product deleted successfully')
+    except:
+        return jsonify(error='Failed to delete the product'), 500
+  
 
 if __name__ == '__main__':
     with app.app_context():
