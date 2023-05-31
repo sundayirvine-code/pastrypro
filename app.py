@@ -245,9 +245,11 @@ def inventory():
     .subquery()
 
     top_ingredients = db.session.query(Product.name, top_ingredient_ids.c.total_quantity, UnitOfMeasurement.name) \
-        .join(top_ingredient_ids, Product.id == top_ingredient_ids.c.product_id) \
-        .join(UnitOfMeasurement, Product.unit_of_measurement_id == UnitOfMeasurement.id) \
-        .all()
+    .join(top_ingredient_ids, Product.id == top_ingredient_ids.c.product_id) \
+    .join(UnitOfMeasurement, Product.unit_of_measurement_id == UnitOfMeasurement.id) \
+    .filter(Product.user_id == user_id) \
+    .all()
+
     
     top_ingredients_with_index = [(index + 1, ingredient) for index, ingredient in enumerate(top_ingredients)]
     
@@ -435,13 +437,15 @@ def category_products():
 
     product_data = []
     for product in products:
+
         product_info = {
             'index': products.index(product) + 1,
             'id': product.id,
             'name': product.name,
             'category': get_category_name(product.category_id),
             'quantity': product.quantity,
-            'status': get_product_status(product.quantity)
+            'status': get_product_status(product.quantity),
+            'unit': get_unit_of_measurement_name(product.unit_of_measurement_id)
         }
         product_data.append(product_info)
 
@@ -493,7 +497,8 @@ def bake():
             db.session.add(baked_product_ingredient)
 
             # Update product quantity
-            product = Product.query.get(product_id)
+            from decimal import Decimal
+            product_quantity = Decimal(product_quantity)
             product.quantity -= product_quantity
             db.session.add(product)
 

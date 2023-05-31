@@ -70,7 +70,7 @@ createProductBtn.addEventListener("click", function(event) {
                 <td>${newProduct.quantity}</td>
                 <td>${newProduct.unit}</td>
                 <td>${newProduct.status}</td>
-                <a href="{{ url_for('delete_product', id=${newProduct.id}) }}" class="btn btn-danger btn-sm delete-product">Delete</a>
+                <td><a href="{{ url_for('delete_product', id=${newProduct.id}) }}" class="btn btn-danger btn-sm delete-product">Delete</a></td>  
             </tr>
         `;
 

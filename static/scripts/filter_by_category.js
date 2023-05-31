@@ -41,14 +41,20 @@ fetch('/category_products', {
         quantityCell.textContent = product.quantity;
         row.appendChild(quantityCell);
 
+        const unitCell = document.createElement('td');
+        unitCell.textContent = product.unit;
+        row.appendChild(unitCell);
+
         const statusCell = document.createElement('td');
         statusCell.textContent = product.status;
         row.appendChild(statusCell);
 
+        //<td><a href="{{ url_for('delete_product', id=${newProduct.id}) }}" class="btn btn-danger btn-sm delete-product">Delete</a></td> 
         const actionCell = document.createElement('td');
         const actionLink = document.createElement('a');
-        actionLink.setAttribute('href', `/product_details?id=${product.id}`);
-        actionLink.textContent = 'View Product';
+        actionLink.setAttribute('href', `url_for('delete_product', id=${product.id}) }}`);
+        actionLink.setAttribute('class', `btn btn-danger btn-sm delete-product`);
+        actionLink.textContent = 'Delete';
         actionCell.appendChild(actionLink);
         row.appendChild(actionCell);
 
