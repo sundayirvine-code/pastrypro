@@ -5,6 +5,7 @@ from forms import RegistrationForm, LoginForm
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_migrate import Migrate
 import datetime
+from datetime import datetime, timedelta
 from flask_login import LoginManager, login_required, current_user, UserMixin, login_user, logout_user
 
 app = Flask(__name__)
@@ -110,7 +111,7 @@ class BakedProduct(db.Model):
     name = db.Column(db.String(100), nullable=False)
     quantity = db.Column(db.Integer, nullable=False)
     total_price = db.Column(db.Float, nullable=False)
-    date_baked = db.Column(db.DateTime, default=datetime.datetime.utcnow)
+    date_baked = db.Column(db.DateTime, default=datetime.utcnow)
     ingredients = db.relationship('BakedProductIngredient', backref='baked_product', lazy=True)
 
     def __repr__(self):
@@ -207,8 +208,33 @@ def get_unit_of_measurement_name(unit_of_measurement_id):
             return unit_of_measurement.name
         return ''
 
-
 @app.route('/inventory')
+@login_required
+def inventory():
+    user_id = current_user.id
+    units = UnitOfMeasurement.query.all()
+    categories = Category.query.filter_by(user_id=user_id).all()
+    
+    # Calculate the start and end dates for the past 7 days
+    start_date = datetime.now() - timedelta(days=7)
+    end_date = datetime.now()
+
+    # Fetch the products used in the past 7 days along with their quantities
+    products = db.session.query(Product, BakedProductIngredient.quantity) \
+                .join(BakedProductIngredient) \
+                .join(BakedProduct) \
+                .filter(BakedProduct.date_baked.between(start_date, end_date)) \
+                .filter(Product.user_id == user_id) \
+                .all()
+
+    app.jinja_env.globals['get_category_name'] = get_category_name
+    return render_template('inventory.html', products=products, categories=categories, units=units,
+                           username=current_user.username, current_date=datetime.now().strftime("%d/%m/%Y"),
+                           get_unit_of_measurement_name=get_unit_of_measurement_name,
+                           get_product_status=get_product_status,
+                           get_category_name=get_category_name)
+
+'''@app.route('/inventory')
 @login_required
 def inventory():
     user_id = current_user.id
@@ -217,7 +243,7 @@ def inventory():
     categories = Category.query.filter_by(user_id=user_id).all()
     app.jinja_env.globals['get_category_name'] = get_category_name
     return render_template('inventory.html', products=products, categories=categories, units=units,
-                           username=session.get('username'), current_date=datetime.datetime.now().strftime("%d/%m/%Y"), get_unit_of_measurement_name=get_unit_of_measurement_name, get_product_status=get_product_status, get_category_name=get_category_name)
+                           username=current_user.username, current_date=datetime.datetime.now().strftime("%d/%m/%Y"), get_unit_of_measurement_name=get_unit_of_measurement_name, get_product_status=get_product_status, get_category_name=get_category_name)'''
 
 @app.route("/create_product", methods=["POST"])
 @login_required

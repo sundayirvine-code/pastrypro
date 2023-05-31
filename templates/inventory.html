@@ -60,15 +60,16 @@
               </header>
               
 
-            <section id="overview">
+              <section id="overview">
                 <div class="view_title">Analytics Overview</div>
                 <div class="overviews">  
-                    <div class="overview one"></div>
-                    <div class="overview two"></div>
-                    <div class="overview three"></div>
-                    <div class="overview four"></div>
+                    <div class="overview one">Total Products: {{ products|length }}</div>
+                    <div class="overview two">Total Categories: {{ categories|length }}</div>
+                    <div class="overview three">Total Units: {{ units|length }}</div>
+                    <div class="overview four">Total Products Used in Past 7 Days: {{ products|map(attribute=1)|sum }}</div>
                 </div>
             </section>
+            
             <div class="offcanvas offcanvas-end" data-bs-scroll="true" tabindex="-1" id="offcanvasWithBothOptionss" aria-labelledby="offcanvasWithBothOptionsLabel">
                 <div class="offcanvas-header">
                     <h5 class="offcanvas-title" id="offcanvasWithBothOptionsLabell">Add New Product</h5>
