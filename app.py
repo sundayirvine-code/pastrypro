@@ -104,10 +104,6 @@ def seed_unit_of_measurement():
 
     db.session.commit()
 
-# Seed the UnitOfMeasurement table
-with app.app_context():
-    seed_unit_of_measurement()
-
 class BakedProduct(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False)
@@ -217,8 +213,11 @@ def inventory():
 @app.route("/create_product", methods=["POST"])
 @login_required
 def create_product():
+    id = session.get('user_id')
+
+     # Retrieve form data
     form_data = request.json
-    required_fields = ["name", "price", "quantity", "category", "description"]
+    required_fields = ["name", "price", "quantity", "category", "description", "unit_id"]
     if not all(field in form_data for field in required_fields):
         return jsonify({"error": "Please provide all the required fields."}), 400
 
@@ -226,20 +225,22 @@ def create_product():
     db.session.add(new_image)
     db.session.commit()
 
-    user = User.query.filter_by(username=session.get('username')).first()
+    #user = User.query.filter_by(username=session.get('username')).first()
     image = Image.query.filter_by(image_url=form_data["image"]).first()
 
     new_product = Product(
         name=form_data["name"],
         price=form_data["price"],
         quantity=form_data["quantity"],
-        category_id=form_data["category"],
+        category_id=int(form_data["category"]),
         image_id=image.id,
         description=form_data["description"],
-        user_id=user.id 
+        user_id=id,
+        unit_of_measurement_id=form_data["unit_id"]
     )
 
-    new_category = Category.query.filter_by(id=form_data["category"], user_id=user.id).first()
+    
+    new_category = Category.query.filter_by(id=form_data["category"], user_id=session.get('user_id')).first()
     category_name = new_category.name if new_category else ""
 
     db.session.add(new_product)
@@ -451,10 +452,10 @@ def search_ingredients():
 
     return jsonify(response)
         
-        
     
 
 if __name__ == '__main__':
     with app.app_context():
         db.create_all()
+        seed_unit_of_measurement()
     app.run(debug=True)

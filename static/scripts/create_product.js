@@ -11,12 +11,13 @@ event.preventDefault(); // Prevent the default form submission behavior
 const name = document.getElementById("inputName").value;
 const price = parseFloat(document.getElementById("inputPrice").value);
 const quantity = parseInt(document.getElementById("inputQuantity").value);
-const category = document.getElementById("inputCategory").value;
+const unit = parseInt(document.getElementById("inputCategory").value);
+const category = parseInt(document.getElementById("inputCategory").value);
 const image = document.getElementById("inputImage").value;
 const description = document.getElementById("inputDescription").value;
 
 // Perform validation on the data (you can add your own validation logic here)
-if (!name || !price || !quantity || !category || !description) {
+if (!name || !price || !quantity || !category || !description || !unit) {
     alert("Please fill in all the required fields.");
     return;
 }
@@ -28,7 +29,8 @@ const formData = {
     quantity: quantity,
     category: category,
     image: image,
-    description: description
+    description: description,
+    unit_id: unit
 };
 
 // Send an AJAX request to the server to create a new product
