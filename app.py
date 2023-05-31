@@ -1,3 +1,4 @@
+# app.py file
 from flask_sqlalchemy import SQLAlchemy
 from flask import Flask, render_template, redirect, url_for, request, flash, session, jsonify
 from forms import RegistrationForm, LoginForm
@@ -184,8 +185,8 @@ def logout():
 
 def get_category_name(category_id):
         with app.app_context():
-            user = User.query.filter_by(username=session.get('username')).first()
-            categories = Category.query.filter_by(user_id=user.id).all()
+            user_id = current_user.id
+            categories = Category.query.filter_by(user_id=user_id).all()
             category = next((cat for cat in categories if cat.id == category_id), None)
             return category.name if category else ""
         
@@ -198,22 +199,30 @@ def get_product_status(quantity):
         return 'Low'
     else:
         return 'In Stock'
+    
+def get_unit_of_measurement_name(unit_of_measurement_id):
+    with app.app_context():
+        unit_of_measurement = UnitOfMeasurement.query.get(unit_of_measurement_id)
+        if unit_of_measurement:
+            return unit_of_measurement.name
+        return ''
 
 
 @app.route('/inventory')
 @login_required
 def inventory():
-    user = User.query.filter_by(username=session.get('username')).first()
-    products = Product.query.filter_by(user_id=user.id).all()
-    categories = Category.query.filter_by(user_id=user.id).all()
+    user_id = current_user.id
+    units = UnitOfMeasurement.query.all()
+    products = Product.query.filter_by(user_id=user_id).all()
+    categories = Category.query.filter_by(user_id=user_id).all()
     app.jinja_env.globals['get_category_name'] = get_category_name
-    return render_template('inventory.html', products=products, categories=categories,
-                           username=session.get('username'), current_date=datetime.datetime.now().strftime("%d/%m/%Y"))
+    return render_template('inventory.html', products=products, categories=categories, units=units,
+                           username=session.get('username'), current_date=datetime.datetime.now().strftime("%d/%m/%Y"), get_unit_of_measurement_name=get_unit_of_measurement_name, get_product_status=get_product_status, get_category_name=get_category_name)
 
 @app.route("/create_product", methods=["POST"])
 @login_required
 def create_product():
-    id = session.get('user_id')
+    user_id = current_user.id
 
      # Retrieve form data
     form_data = request.json
@@ -225,7 +234,6 @@ def create_product():
     db.session.add(new_image)
     db.session.commit()
 
-    #user = User.query.filter_by(username=session.get('username')).first()
     image = Image.query.filter_by(image_url=form_data["image"]).first()
 
     new_product = Product(
@@ -235,12 +243,12 @@ def create_product():
         category_id=int(form_data["category"]),
         image_id=image.id,
         description=form_data["description"],
-        user_id=id,
+        user_id=user_id,
         unit_of_measurement_id=form_data["unit_id"]
     )
 
     
-    new_category = Category.query.filter_by(id=form_data["category"], user_id=session.get('user_id')).first()
+    new_category = Category.query.filter_by(id=form_data["category"], user_id=user_id).first()
     category_name = new_category.name if new_category else ""
 
     db.session.add(new_product)
@@ -260,9 +268,9 @@ def create_product():
 @app.route('/category', methods=['POST'])
 @login_required
 def create_category():
+    user_id = current_user.id
     category_name = request.json['category']
-    user = User.query.filter_by(username=session.get('username')).first()
-    new_category = Category(name=category_name, user_id=user.id)
+    new_category = Category(name=category_name, user_id=user_id)
 
     try:
         db.session.add(new_category)
@@ -281,15 +289,15 @@ def create_category():
 
 @app.route('/product_details', methods=['GET', 'PUT'])
 @login_required
-def product_details():  
-    user = User.query.filter_by(username=session.get('username')).first()
+def product_details():
+    user_id = current_user.id  
     if request.method == 'GET':
         id = request.args.get('id')
-        product = Product.query.filter_by(id=id, user_id=user.id).first()
+        product = Product.query.filter_by(id=id, user_id=user_id).first()
         if product:
             image = Image.query.filter_by(id=product.image_id).first()
-            categories = Category.query.filter_by(user_id=user.id).all()
-            category = Category.query.filter_by(id=product.category_id, user_id=user.id).first()
+            categories = Category.query.filter_by(user_id=user_id).all()
+            category = Category.query.filter_by(id=product.category_id, user_id=user_id).first()
             category_name = category.name if category else None
             category_id = category.id
             
@@ -317,7 +325,7 @@ def product_details():
         if not all(field in form_data for field in required_fields):
             return jsonify({"error": "Please provide all the required fields."}), 400
         
-        product = Product.query.filter_by(id=form_data["productId"], user_id=user.id).first()
+        product = Product.query.filter_by(id=form_data["productId"], user_id=user_id).first()
         image = Image.query.filter_by(id=form_data["urlId"]).first()
 
         if image:
@@ -342,11 +350,11 @@ def product_details():
 
         # query the new product
         new_product = Product.query.filter_by(id=form_data
-        ["productId"], user_id=user.id).first()
+        ["productId"], user_id=user_id).first()
 
         # query category
-        new_category = Category.query.filter_by(id=form_data["category"], user_id=user.id).first()
-        categories = Category.query.filter_by(user_id=user.id).all()
+        new_category = Category.query.filter_by(id=form_data["category"], user_id=user_id).first()
+        categories = Category.query.filter_by(user_id=user_id).all()
         return jsonify({
                 'name': new_product.name,
                 'product_id': new_product.id,
@@ -369,11 +377,11 @@ def category_products():
     if category_id is None:
         return jsonify({'error': 'Category ID is missing'}), 400
 
-    user = User.query.filter_by(username=session.get('username')).first()
+    user_id = current_user.id
     if category_id == -1:
-        products = Product.query.filter_by(user_id=user.id).all()
+        products = Product.query.filter_by(user_id=user_id).all()
     else:
-        products = Product.query.filter_by(category_id=category_id, user_id=user.id).all()
+        products = Product.query.filter_by(category_id=category_id, user_id=user_id).all()
 
 
     product_data = []

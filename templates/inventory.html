@@ -76,7 +76,7 @@
                 </div>
                 <div class="offcanvas-body">
                     <form class="row g-3">
-                        <div class="col-md-6">
+                        <div class="col-md-12">
                           <label for="inputName" class="form-label">Name</label>
                           <input type="text" class="form-control" id="inputName" required>
                         </div>
@@ -84,20 +84,28 @@
                           <label for="inputPrice" class="form-label">Price</label>
                           <input type="number" step="0.01" class="form-control" id="inputPrice" required>
                         </div>
+                        <div class="col-6">
+                          <label for="inputCategory" class="form-label">Category</label>
+                          <select id="inputCategory" class="form-select" required>
+                              <option value=""></option>
+                            {% for category in categories %}
+                              <option value="{{category.id}}">{{category.name}}</option>
+                            {% endfor %}
+                          </select> 
+                        </div>
                         <div class="col-md-6">
                           <label for="inputQuantity" class="form-label">Quantity</label>
                           <input type="number" class="form-control" id="inputQuantity" required>
                         </div>
-                          <div class="col-6">
-                            <label for="inputCategory" class="form-label">Category</label>
-                            <select id="inputCategory" class="form-select" required>
-                                <option value=""></option>
-                              {% for category in categories %}
-                                <option value="{{category.id}}">{{category.name}}</option>
-                              {% endfor %}
-                            </select>
-                            
-                          </div>
+                        <div class="col-6">
+                          <label for="inputUnit" class="form-label">Unit</label>
+                          <select id="inputUnit" class="form-select" required>
+                              <option value=""></option>
+                            {% for unit in units %}
+                              <option value="{{unit.id}}">{{unit.name}}</option>
+                            {% endfor %}
+                          </select> 
+                        </div>
                           <div class="col-12">
                             <label for="inputImage" class="form-label">Image Url</label>
                             <input type="text" class="form-control" id="inputImage">
@@ -125,6 +133,7 @@
                         <th scope="col">Name</th>
                         <th scope="col">Category</th>
                         <th scope="col">Qty</th>
+                        <th scope="col">Unit</th>
                         <th scope="col">Status</th>
                         <th scope="col">Action</th>
                       </tr>
@@ -137,34 +146,14 @@
                         <td><a href="{{ url_for('product_details', id=product.id) }}">{{ product.name }}</a></td>
                         <td>{{ get_category_name(product.category_id) }}</td>
                         <td>{{ product.quantity }}</td>
-                        <!-- Update status based on product quantity -->
-                        <td>
-                          {% if product.quantity <= 0 %}
-                            Out of Stock
-                          {% elif product.quantity <= 5 %}
-                            {% if product.quantity > 0 %}
-                              Critical
-                            {% endif %}
-                          {% elif product.quantity <= 10 %}
-                            {% if product.quantity > 5 %}
-                              Low
-                            {% endif %}
-                          {% else %}
-                            In Stock
-                          {% endif %}
-                        </td>
+                        <td>{{ get_unit_of_measurement_name(product.unit_of_measurement_id) }}</td>
+                        <td>{{ get_product_status(product.quantity) }}</td>
                         <td><a href="{{ url_for('product_details', id=product.id) }}">View Product</a></td>
                       </tr>
                       {% endfor %}
                     </tbody>
                   </table>
-                  <script src="/static/scripts/filter_by_category.js"></script>
-                  <script>
-
-                  </script>
-                  
-                  
-                               
+                  <script src="/static/scripts/filter_by_category.js"></script>                           
             </section>
         </main>
     </div>
