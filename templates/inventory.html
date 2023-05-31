@@ -13,6 +13,34 @@
     <title>Pastry Pro | Inventory</title>
 </head>
 <body>
+    {% with success_messages = get_flashed_messages(with_categories=true, category_filter=['success']) %}
+    {% if success_messages %}
+      <ul class="flash-messages success-messages">
+        {% for message in success_messages %}
+          <li>{{ message[1] }}</li>
+        {% endfor %}
+      </ul>
+    {% endif %}
+    {% endwith %}
+
+    {% with error_messages = get_flashed_messages(with_categories=true, category_filter=['danger']) %}
+      {% if error_messages %}
+        <ul class="flash-messages error-messages">
+          {% for message in error_messages %}
+            <li>{{ message[1] }}</li>
+          {% endfor %}
+        </ul>
+      {% endif %}
+    {% endwith %}
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <script>
+    $(document).ready(function() {
+      setTimeout(function() {
+        $('.flash-messages').fadeOut('slow');
+      }, 5000);
+    });
+  </script>
+
     <div id="container">
         <aside class="aside">
             <h5>CATEGORIES</h5>
@@ -61,12 +89,16 @@
               
 
               <section id="overview">
-                <div class="view_title">Analytics Overview</div>
+                <div class="view_title">Analytics Overview Last 7 Days</div>
+                
                 <div class="overviews">  
-                    <div class="overview one">Total Products: {{ products|length }}</div>
-                    <div class="overview two">Total Categories: {{ categories|length }}</div>
-                    <div class="overview three">Total Units: {{ units|length }}</div>
-                    <div class="overview four">Total Products Used in Past 7 Days: {{ products|map(attribute=1)|sum }}</div>
+                  {% for index, ingredient in top_ingredients_with_index %}
+                      <div class="item-{{ index }} overview">
+                        <div>{{ ingredient[0] }}</div> 
+                        <div>{{ ingredient[1] }}</div> 
+                        <div>{{ ingredient[2] }}</div>
+                      </div>
+                    {% endfor %}
                 </div>
             </section>
             

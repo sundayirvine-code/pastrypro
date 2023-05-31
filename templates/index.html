@@ -10,6 +10,34 @@
     <title>PastryPro | Home</title>
 </head>
 <body>
+    {% with success_messages = get_flashed_messages(with_categories=true, category_filter=['success']) %}
+    {% if success_messages %}
+        <ul class="flash-messages success-messages">
+        {% for message in success_messages %}
+            <li>{{ message[1] }}</li>
+        {% endfor %}
+        </ul>
+    {% endif %}
+    {% endwith %}
+
+    {% with error_messages = get_flashed_messages(with_categories=true, category_filter=['danger']) %}
+    {% if error_messages %}
+        <ul class="flash-messages error-messages">
+        {% for message in error_messages %}
+            <li>{{ message[1] }}</li>
+        {% endfor %}
+        </ul>
+    {% endif %}
+    {% endwith %}
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+    $(document).ready(function() {
+        setTimeout(function() {
+        $('.flash-messages').fadeOut('slow');
+        }, 5000);
+    });
+    </script>
+
     <!--NAV SECTION-->
     <nav id="nav_bar">
         <div id="logo">

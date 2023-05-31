@@ -1,12 +1,14 @@
 # app.py file
-from flask_sqlalchemy import SQLAlchemy
 from flask import Flask, render_template, redirect, url_for, request, flash, session, jsonify
-from forms import RegistrationForm, LoginForm
-from werkzeug.security import generate_password_hash, check_password_hash
+from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy import Column, Integer, String, Numeric, func
+from sqlalchemy.exc import IntegrityError
 from flask_migrate import Migrate
-import datetime
-#from datetime import datetime, timedelta
 from flask_login import LoginManager, login_required, current_user, UserMixin, login_user, logout_user
+from werkzeug.security import generate_password_hash, check_password_hash
+import datetime
+
+from forms import RegistrationForm, LoginForm
 
 app = Flask(__name__)
 
@@ -43,8 +45,8 @@ class Product(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False)
     description = db.Column(db.Text, nullable=False)
-    price = db.Column(db.Float, nullable=False)
-    quantity = db.Column(db.Integer, default=0) #change this to float
+    price = db.Column(db.Numeric(precision=8, scale=2), nullable=False)  # Updated to use Numeric with precision and scale
+    quantity = db.Column(db.Numeric(precision=8, scale=2), default=0.0)  # Updated to use Numeric with precision and scale
     image_id = db.Column(db.Integer, db.ForeignKey('image.id'), nullable=False)
     category_id = db.Column(db.Integer, db.ForeignKey('category.id'), nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False) 
@@ -57,7 +59,8 @@ class Product(db.Model):
 class Category(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(50), nullable=False, unique=False)
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id')) 
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    user = db.relationship('User') 
 
     def __repr__(self):
         return f"Category('{self.name}')"
@@ -109,20 +112,21 @@ def seed_unit_of_measurement():
 class BakedProduct(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False)
-    quantity = db.Column(db.Integer, nullable=False)
-    total_price = db.Column(db.Float, nullable=False)
+    quantity = db.Column(db.Numeric(precision=8, scale=2), nullable=False)  # Updated to use Numeric with precision and scale
+    total_price = db.Column(db.Numeric(precision=8, scale=2), nullable=False)  # Updated to use Numeric with precision and scale
     date_baked = db.Column(db.DateTime, default=datetime.datetime.utcnow)
+    unit_of_measurement_id = db.Column(db.Integer, db.ForeignKey('unit_of_measurement.id'), nullable=False)
     ingredients = db.relationship('BakedProductIngredient', backref='baked_product', lazy=True)
 
     def __repr__(self):
         return f"BakedProduct('{self.name}', '{self.quantity}', '{self.total_price}', '{self.date_baked}')"
-    
 
+    
 class BakedProductIngredient(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     baked_product_id = db.Column(db.Integer, db.ForeignKey('baked_product.id'), nullable=False)
     product_id = db.Column(db.Integer, db.ForeignKey('product.id'), nullable=False)
-    quantity = db.Column(db.Integer, nullable=False)
+    quantity = db.Column(db.Numeric(precision=8, scale=2), nullable=False)  # Updated to use Numeric with precision and scale
     date_used = db.Column(db.DateTime, default=datetime.datetime.utcnow)
 
     def __repr__(self):
@@ -151,36 +155,44 @@ def home():
 def signup():
     form = RegistrationForm()
     if form.validate_on_submit():
-        user = User(username=form.username.data, email=form.email.data)
-        user.set_password(form.password.data)
-        db.session.add(user)
-        db.session.commit()
-        return redirect(url_for('login'))
+        try:
+            user = User(username=form.username.data, email=form.email.data)
+            user.set_password(form.password.data)
+            db.session.add(user)
+            db.session.commit()
+            flash('Registration successful. Please log in.', 'success')
+            return redirect(url_for('login'))
+        except IntegrityError:
+            db.session.rollback()
+            flash('Username or email already exists. Please choose a different one.', 'danger')
+    
     return render_template('signup.html', form=form)
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if current_user.is_authenticated:
-        return redirect(url_for('inventory')) 
+        flash('Welcome, Log In successful!', 'success')
+        return redirect(url_for('inventory'))
     form = LoginForm()
 
-    if request.method == 'POST':
-        email = request.form['email']
-        password = request.form['password']
-        if form.validate_on_submit():
-            user = User.query.filter_by(email=email).first()
-            if user and user.check_password(password):
-                login_user(user)
-                next_page = request.args.get('next')
-                return redirect(next_page or url_for('inventory'))
-            else:
-                flash('Invalid username or password', 'danger')
+    if form.validate_on_submit():
+        email = form.email.data
+        password = form.password.data
+        user = User.query.filter_by(email=email).first()
+        if user and user.check_password(password):
+            login_user(user)
+            next_page = request.args.get('next')
+            flash('Welcome, Log In successful!', 'success')
+            return redirect(next_page or url_for('inventory'))
+        else:
+            flash('Invalid email or password', 'danger')
     return render_template('login.html', form=form)
 
 @app.route('/logout')
 @login_required
 def logout():
     logout_user()
+    flash('You have been logged out.', 'info')
     return redirect(url_for('home'))
 
 
@@ -208,42 +220,44 @@ def get_unit_of_measurement_name(unit_of_measurement_id):
             return unit_of_measurement.name
         return ''
 
+def get_past_week_dates():
+    end_date = datetime.datetime.now()
+    start_date = end_date - datetime.timedelta(days=7)
+    return start_date, end_date
+
 @app.route('/inventory')
 @login_required
 def inventory():
     user_id = current_user.id
     units = UnitOfMeasurement.query.all()
     categories = Category.query.filter_by(user_id=user_id).all()
+    products = Product.query.filter_by(user_id=user_id).all()
     
     # Calculate the start and end dates for the past 7 days
-    start_date = datetime.now() - timedelta(days=7)
-    end_date = datetime.now()
+    start_date, end_date = get_past_week_dates()
 
-    # Fetch the products used in the past 7 days along with their quantities
-    products = db.session.query(Product, BakedProductIngredient.quantity) \
-                .join(BakedProductIngredient) \
-                .join(BakedProduct) \
-                .filter(BakedProduct.date_baked.between(start_date, end_date)) \
-                .filter(Product.user_id == user_id) \
-                .all()
+    top_ingredient_ids = db.session.query(BakedProductIngredient.product_id, func.sum(BakedProductIngredient.quantity).label('total_quantity')) \
+    .join(BakedProduct) \
+    .filter(BakedProduct.date_baked.between(start_date, end_date)) \
+    .group_by(BakedProductIngredient.product_id) \
+    .order_by(func.sum(BakedProductIngredient.quantity).desc()) \
+    .limit(4) \
+    .subquery()
 
+    top_ingredients = db.session.query(Product.name, top_ingredient_ids.c.total_quantity, UnitOfMeasurement.name) \
+        .join(top_ingredient_ids, Product.id == top_ingredient_ids.c.product_id) \
+        .join(UnitOfMeasurement, Product.unit_of_measurement_id == UnitOfMeasurement.id) \
+        .all()
+    
+    top_ingredients_with_index = [(index + 1, ingredient) for index, ingredient in enumerate(top_ingredients)]
+    
     app.jinja_env.globals['get_category_name'] = get_category_name
-    return render_template('inventory.html', products=products, categories=categories, units=units,
-                           username=current_user.username, current_date=datetime.now().strftime("%d/%m/%Y"),
+    return render_template('inventory.html', top_ingredients_with_index=top_ingredients_with_index, categories=categories, units=units,
+                           username=current_user.username, current_date=datetime.datetime.now().strftime("%d/%m/%Y"),
                            get_unit_of_measurement_name=get_unit_of_measurement_name,
                            get_product_status=get_product_status,
-                           get_category_name=get_category_name)
+                           get_category_name=get_category_name, products=products)
 
-'''@app.route('/inventory')
-@login_required
-def inventory():
-    user_id = current_user.id
-    units = UnitOfMeasurement.query.all()
-    products = Product.query.filter_by(user_id=user_id).all()
-    categories = Category.query.filter_by(user_id=user_id).all()
-    app.jinja_env.globals['get_category_name'] = get_category_name
-    return render_template('inventory.html', products=products, categories=categories, units=units,
-                           username=current_user.username, current_date=datetime.datetime.now().strftime("%d/%m/%Y"), get_unit_of_measurement_name=get_unit_of_measurement_name, get_product_status=get_product_status, get_category_name=get_category_name)'''
 
 @app.route("/create_product", methods=["POST"])
 @login_required
@@ -438,13 +452,16 @@ def category_products():
 @login_required
 def bake():
     if request.method == 'GET':
-        return render_template('bake.html')
+        units = UnitOfMeasurement.query.all()
+        return render_template('bake.html', units = units)
     else:
         data = request.get_json()
         pastry_name = data.get('name')
         quantity = data.get('quantity')
         ingredients = data.get('ingredients')
         totalPrice = data.get('totalPrice')
+        unit_id = data.get('unit')
+
         # Check ingredient availability
         for ingredient in ingredients:
             product_id = ingredient.get('id')
@@ -459,7 +476,7 @@ def bake():
                 return jsonify({"error": f"Insufficient quantity for product {product.name}."}), 400
 
         # Create baked product
-        baked_product = BakedProduct(name=pastry_name, quantity=quantity, total_price=totalPrice)
+        baked_product = BakedProduct(name=pastry_name, quantity=quantity, total_price=totalPrice, unit_of_measurement_id=unit_id)
         db.session.add(baked_product)
         db.session.flush()
 

@@ -29,8 +29,9 @@ $(function() {
       var name = $("#name").val();
       var quantity = $("#quantity").val();
       var totalPrice = $("#totalPrice").val();
+      var unit = $("#inputUnit").val();
       var ingredients = [];
-
+ 
       $("#ingredientList li").each(function() {
         var id = $(this).data("id");
         var quantity =$(this).data("quantity");
@@ -41,13 +42,20 @@ $(function() {
         });
       });
 
+      if (!name || !quantity || !totalPrice || !unit || !ingredients) {
+        alert("Please fill in all the required fields.");
+        return;
+      }
+
       var data = {
         name: name,
         quantity: quantity,
         ingredients: ingredients,
-        totalPrice: totalPrice
+        totalPrice: totalPrice,
+        unit: unit
       };
 
+      console.log(data)
       $.ajax({
         url: '/bake',
         type: 'POST',

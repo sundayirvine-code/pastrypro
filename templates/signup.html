@@ -18,6 +18,35 @@
                 <p>Create your free account with PastryPro</p>
             </div>
             <form action="{{ url_for('signup') }}" method="post">
+                <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+                <script>
+                $(document).ready(function() {
+                    setTimeout(function() {
+                    $('.flash-messages').fadeOut('slow');
+                    }, 5000);
+                });
+                </script>
+
+                {% with success_messages = get_flashed_messages(with_categories=true, category_filter=['success']) %}
+                {% if success_messages %}
+                    <ul class="flash-messages success-messages">
+                    {% for message in success_messages %}
+                        <li>{{ message[1] }}</li>
+                    {% endfor %}
+                    </ul>
+                {% endif %}
+                {% endwith %}
+
+                {% with error_messages = get_flashed_messages(with_categories=true, category_filter=['danger']) %}
+                {% if error_messages %}
+                    <ul class="flash-messages error-messages">
+                    {% for message in error_messages %}
+                        <li>{{ message[1] }}</li>
+                    {% endfor %}
+                    </ul>
+                {% endif %}
+                {% endwith %}
+
                 {{ form.csrf_token }}
                 {{ form.username.label }} {{ form.username }}
                 {{ form.email.label }} {{ form.email }}

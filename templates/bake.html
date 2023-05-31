@@ -19,14 +19,21 @@
       <div id="container">
       <form id="bakeForm">
         <label for="name">Pastry Name:</label>
-        <input type="text" id="name" name="name">
+        <input type="text" id="name" name="name" required>
       
         <label for="quantity">Quantity:</label>
-        <input type="number" id="quantity" name="quantity">
+        <input type="number" id="quantity" name="quantity" required>
       
         <label for="ingredients">Ingredients:</label>
         <input type="text" id="ingredients" name="ingredients">
         
+        <label for="Units">Units:</label>
+        <select id="inputUnit" class="form-select" required>
+          <option value=""></option>
+        {% for unit in units %}
+          <option value="{{unit.id}}">{{unit.name}}</option>
+        {% endfor %}
+      </select> 
       
         <button type="button" id="finishBaking">Finish Baking</button>
       </form>
