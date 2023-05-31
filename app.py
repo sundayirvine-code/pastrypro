@@ -5,7 +5,7 @@ from forms import RegistrationForm, LoginForm
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_migrate import Migrate
 import datetime
-from datetime import datetime, timedelta
+#from datetime import datetime, timedelta
 from flask_login import LoginManager, login_required, current_user, UserMixin, login_user, logout_user
 
 app = Flask(__name__)
@@ -111,7 +111,7 @@ class BakedProduct(db.Model):
     name = db.Column(db.String(100), nullable=False)
     quantity = db.Column(db.Integer, nullable=False)
     total_price = db.Column(db.Float, nullable=False)
-    date_baked = db.Column(db.DateTime, default=datetime.utcnow)
+    date_baked = db.Column(db.DateTime, default=datetime.datetime.utcnow)
     ingredients = db.relationship('BakedProductIngredient', backref='baked_product', lazy=True)
 
     def __repr__(self):
