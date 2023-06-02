@@ -14,7 +14,11 @@ $(function() {
     var totalPrice = 0;
 
     function addIngredient(ingredient) {
-        var quantity = parseFloat(prompt("Enter quantity for ingredient " + ingredient.id));
+        var quantity = parseFloat(prompt("Enter quantity for ingredient " + ingredient.label));
+        if (!quantity) {
+          alert("Please fill in all the required fields.");
+          return;
+        }
         var li = '<li data-id="' + ingredient.id + '" data-quantity="' + quantity+ '">' + ingredient.label + ' @ ' + ingredient.price +  ' x ' + quantity + ' = '+ ingredient.price * quantity + '</li>';
         $("#ingredientList").append(li);
       calculateTotalPrice(quantity, ingredient.price);
@@ -29,6 +33,11 @@ $(function() {
       var name = $("#name").val();
       var quantity = $("#quantity").val();
       var totalPrice = $("#totalPrice").val();
+      var laborCost = $("#laborCost").val();
+      var electricityCost = $("#electricityCost").val();
+      var rentCost = $("#rentCost").val();
+      var waterCost = $("#waterCost").val();
+      var transportationCost = $("#transportationCost").val();
       var unit = $("#inputUnit").val();
       var ingredients = [];
  
@@ -42,7 +51,7 @@ $(function() {
         });
       });
 
-      if (!name || !quantity || !totalPrice || !unit || !ingredients) {
+      if (!name || !quantity || !totalPrice || !unit || !ingredients || !laborCost || !electricityCost || !transportationCost) {
         alert("Please fill in all the required fields.");
         return;
       }
@@ -52,7 +61,12 @@ $(function() {
         quantity: quantity,
         ingredients: ingredients,
         totalPrice: totalPrice,
-        unit: unit
+        unit: unit,
+        laborCost: laborCost,
+        electricityCost: electricityCost,
+        rentCost: rentCost,
+        waterCost: waterCost,
+        transportationCost: transportationCost
       };
 
       console.log(data)
@@ -62,7 +76,9 @@ $(function() {
         data: JSON.stringify(data),
         contentType: 'application/json',
         success: function(response) {
-          alert(response.message);
+          console.log(response)
+          $("#sellPrice").val(response.selling_price);
+          alert(response.message);  
         },
         error: function(xhr, status, error) {
           var errorMessage = xhr.responseJSON.error;

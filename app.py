@@ -10,6 +10,8 @@ import datetime
 
 from forms import RegistrationForm, LoginForm
 
+from decimal import Decimal
+
 app = Flask(__name__)
 
 # Configuration
@@ -112,14 +114,33 @@ def seed_unit_of_measurement():
 class BakedProduct(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False)
-    quantity = db.Column(db.Numeric(precision=8, scale=2), nullable=False)  # Updated to use Numeric with precision and scale
-    total_price = db.Column(db.Numeric(precision=8, scale=2), nullable=False)  # Updated to use Numeric with precision and scale
+    quantity = db.Column(db.Numeric(precision=8, scale=2), nullable=False)
+    cost_price = db.Column(db.Numeric(precision=8, scale=2), nullable=False)
+    selling_price = db.Column(db.Numeric(precision=8, scale=2), nullable=False)
     date_baked = db.Column(db.DateTime, default=datetime.datetime.utcnow)
     unit_of_measurement_id = db.Column(db.Integer, db.ForeignKey('unit_of_measurement.id'), nullable=False)
     ingredients = db.relationship('BakedProductIngredient', backref='baked_product', lazy=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    user = db.relationship('User', backref=db.backref('baked_products', lazy=True))
 
     def __repr__(self):
-        return f"BakedProduct('{self.name}', '{self.quantity}', '{self.total_price}', '{self.date_baked}')"
+        return f"BakedProduct('{self.name}', '{self.quantity}', '{self.cost_price}', '{self.selling_price}', '{self.date_baked}')"
+
+    def calculate_selling_price(self, cost_price, labour_cost, electricity_cost, transportation_cost):
+        # Calculate the selling price based on the cost price and other factors
+        # Tax is set to 16% (0.16)
+
+        tax_percentage = Decimal('0.16')
+
+        total_cost = Decimal(cost_price) + Decimal(labour_cost) + Decimal(electricity_cost) + Decimal(transportation_cost)
+        selling_price = total_cost / (Decimal('1.00') - tax_percentage)
+
+        # Approximating the selling price to the nearest 0.25 value
+        selling_price = round(selling_price * Decimal('4')) / Decimal('4')
+
+        self.selling_price = selling_price
+
+        return selling_price
 
     
 class BakedProductIngredient(db.Model):
@@ -195,7 +216,6 @@ def logout():
     flash('You have been logged out.', 'info')
     return redirect(url_for('home'))
 
-
 def get_category_name(category_id):
         with app.app_context():
             user_id = current_user.id
@@ -241,7 +261,7 @@ def inventory():
     .filter(BakedProduct.date_baked.between(start_date, end_date)) \
     .group_by(BakedProductIngredient.product_id) \
     .order_by(func.sum(BakedProductIngredient.quantity).desc()) \
-    .limit(4) \
+    .limit(6) \
     .subquery()
 
     top_ingredients = db.session.query(Product.name, top_ingredient_ids.c.total_quantity, UnitOfMeasurement.name) \
@@ -462,9 +482,14 @@ def bake():
         data = request.get_json()
         pastry_name = data.get('name')
         quantity = data.get('quantity')
-        ingredients = data.get('ingredients')
         totalPrice = data.get('totalPrice')
+        labor_cost = data.get('laborCost')
+        electricity_cost = data.get('electricityCost')
+        rent_cost = data.get('rentCost')
+        water_cost = data.get('waterCost')
+        transportation_cost = data.get('transportationCost')
         unit_id = data.get('unit')
+        ingredients = data.get('ingredients')
 
         # Check ingredient availability
         for ingredient in ingredients:
@@ -480,7 +505,21 @@ def bake():
                 return jsonify({"error": f"Insufficient quantity for product {product.name}."}), 400
 
         # Create baked product
-        baked_product = BakedProduct(name=pastry_name, quantity=quantity, total_price=totalPrice, unit_of_measurement_id=unit_id)
+        cost_price = Decimal(totalPrice)
+        user_id = current_user.id
+        user = User.query.get(user_id)
+        baked_product = BakedProduct(name=pastry_name, quantity=quantity, cost_price=cost_price, unit_of_measurement_id=unit_id, user=user)
+
+        # Calculate selling price
+        selling_price = baked_product.calculate_selling_price(
+            cost_price=cost_price,
+            labour_cost=Decimal(labor_cost),
+            electricity_cost=Decimal(electricity_cost),
+            #rent_cost=Decimal(rent_cost),
+            #water_cost=Decimal(water_cost),
+            transportation_cost=Decimal(transportation_cost)
+        )
+
         db.session.add(baked_product)
         db.session.flush()
 
@@ -497,14 +536,17 @@ def bake():
             db.session.add(baked_product_ingredient)
 
             # Update product quantity
-            from decimal import Decimal
             product_quantity = Decimal(product_quantity)
+            product = Product.query.get(product_id)
             product.quantity -= product_quantity
             db.session.add(product)
 
         db.session.commit()
 
-        return jsonify({"message": "Baked product created successfully."}), 200
+        return jsonify({
+            "message": "Baked product created successfully.",
+            "selling_price": selling_price 
+            }), 200
     
 
 @app.route('/ingredients/search')
@@ -512,7 +554,8 @@ def bake():
 def search_ingredients():
     search_term = request.args.get('term', '')
 
-    ingredients = Product.query.filter(Product.name.ilike(f'%{search_term}%')).all()
+    ingredients = Product.query.filter(
+    Product.name.ilike(f'%{search_term}%'), Product.user_id == current_user.id).all()
     response = [{'id': ingredient.id, 'label': ingredient.name, 'value': ingredient.name, 'price': ingredient.price} for ingredient in ingredients]
 
     return jsonify(response)

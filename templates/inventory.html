@@ -52,7 +52,7 @@
               </ul>
               
             <div class="add-category">
-                <input id="add-category" type="button" value="Category +" data-bs-toggle="offcanvas" data-bs-target="#offcanvasWithBothOptions" aria-controls="offcanvasWithBothOptions">
+                <input id="add-category" type="button" value="Category +" data-bs-toggle="offcanvas" data-bs-target="#offcanvasWithBothOptions" aria-controls="offcanvasWithBothOptions" class="btn btn-dark">
 
                 <div class="offcanvas offcanvas-start" data-bs-scroll="true" tabindex="-1" id="offcanvasWithBothOptions" aria-labelledby="offcanvasWithBothOptionsLabel">
                 <div class="offcanvas-header">
@@ -67,9 +67,8 @@
                 </div>
             </div>
 
-            <div class="bake">
-              <a href="{{ url_for('bake') }}">Bake</a>
-            </div>
+            <a href="{{ url_for('bake') }}" class="btn btn-dark" id="calc-price" style="color: white;">Price Calc</a>
+
         </aside>
         <main class="main">
             <header class="header">
@@ -91,15 +90,31 @@
               <section id="overview">
                 <div class="view_title">Analytics Overview Last 7 Days</div>
                 
-                <div class="overviews">  
+                <div class="overviews">
                   {% for index, ingredient in top_ingredients_with_index %}
-                      <div class="item-{{ index }} overview">
-                        <div>{{ ingredient[0] }}</div> 
-                        <div>{{ ingredient[1] }}</div> 
-                        <div>{{ ingredient[2] }}</div>
-                      </div>
-                    {% endfor %}
+                    <div class="item-{{ index }} overview">
+                      <div>{{ ingredient[0] }}</div>
+                      <div>{{ ingredient[1] }}</div>
+                      <div>{{ ingredient[2] }}</div>
+                    </div>
+                  {% endfor %}
                 </div>
+                
+                <style>
+                  @media (min-width: 768px) {
+                    .overviews {
+                      justify-content: center;
+                    }
+                
+                  }
+                
+                  @media (min-width: 992px) {
+                    .overviews {
+                      justify-content: flex-start;
+                    }
+                  }
+                </style>
+                
             </section>
             
             <div class="offcanvas offcanvas-end" data-bs-scroll="true" tabindex="-1" id="offcanvasWithBothOptionss" aria-labelledby="offcanvasWithBothOptionsLabel">
@@ -108,54 +123,77 @@
                     <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
                 </div>
                 <div class="offcanvas-body">
-                    <form class="row g-3">
-                        <div class="col-md-12">
-                          <label for="inputName" class="form-label">Name</label>
-                          <input type="text" class="form-control" id="inputName" required>
-                        </div>
-                        <div class="col-md-6">
-                          <label for="inputPrice" class="form-label">Price</label>
-                          <input type="number" step="0.01" class="form-control" id="inputPrice" required>
-                        </div>
-                        <div class="col-6">
-                          <label for="inputCategory" class="form-label">Category</label>
-                          <select id="inputCategory" class="form-select" required>
-                              <option value=""></option>
-                            {% for category in categories %}
-                              <option value="{{category.id}}">{{category.name}}</option>
-                            {% endfor %}
-                          </select> 
-                        </div>
-                        <div class="col-md-6">
-                          <label for="inputQuantity" class="form-label">Quantity</label>
-                          <input type="number" class="form-control" id="inputQuantity" required>
-                        </div>
-                        <div class="col-6">
-                          <label for="inputUnit" class="form-label">Unit</label>
-                          <select id="inputUnit" class="form-select" required>
-                              <option value=""></option>
-                            {% for unit in units %}
-                              <option value="{{unit.id}}">{{unit.name}}</option>
-                            {% endfor %}
-                          </select> 
-                        </div>
-                          <div class="col-12">
-                            <label for="inputImage" class="form-label">Image Url</label>
-                            <input type="text" class="form-control" id="inputImage">
-                          </div>
-                        <div class="col-md-12">
-                            <label for="inputDescription" class="form-label">Description</label>
-                            <textarea class="form-control" id="inputDescription" required rows="5"></textarea>
-                          </div>
-                        <div class="col-12">
-                          <button type="submit" class="btn btn-primary create_product" id="createProductBtn">Create Product</button>
-                        </div>
-                      </form>
+                  <form class="row g-3">
+                    <div class="col-md-12">
+                      <div class="form-floating">
+                        <input type="text" class="form-control no-outline" id="inputName" required autocomplete="off">
+                        <label for="inputName">Name</label>
+                      </div>
+                    </div>
+                    <div class="col-md-6">
+                      <div class="form-floating">
+                        <input type="number" step="0.01" class="form-control no-outline" id="inputPrice" required min="0">
+                        <label for="inputPrice">Price</label>
+                      </div>
+                    </div>
+                    <div class="col-6">
+                      <div class="form-floating">
+                        <select id="inputCategory" class="form-select no-outline" required autocomplete="off">
+                          <option value=""></option>
+                          {% for category in categories %}
+                            <option value="{{category.id}}">{{category.name}}</option>
+                          {% endfor %}
+                        </select>
+                        <label for="inputCategory">Category</label>
+                      </div>
+                    </div>
+                    <div class="col-md-6">
+                      <div class="form-floating">
+                        <input type="number" class="form-control no-outline" id="inputQuantity" required min="0">
+                        <label for="inputQuantity">Quantity</label>
+                      </div>
+                    </div>
+                    <div class="col-6">
+                      <div class="form-floating">
+                        <select id="inputUnit" class="form-select no-outline" required autocomplete="off">
+                          <option value=""></option>
+                          {% for unit in units %}
+                            <option value="{{unit.id}}">{{unit.name}}</option>
+                          {% endfor %}
+                        </select>
+                        <label for="inputUnit">Unit</label>
+                      </div>
+                    </div>
+                    <div class="col-12">
+                      <div class="form-floating">
+                        <input type="text" class="form-control no-outline" id="inputImage" autocomplete="off">
+                        <label for="inputImage">Image URL</label>
+                      </div>
+                    </div>
+                    <div class="col-md-12">
+                      <div class="form-floating">
+                        <textarea class="form-control no-outline" id="inputDescription" required rows="5" autocomplete="off" style="height: 120px;"></textarea>
+                        <label for="inputDescription">Description</label>
+                      </div>
+                    </div>
+                    <div class="col-12">
+                      <button type="submit" class="btn btn-dark create_product" id="createProductBtn">Create Product</button>
+                    </div>
+                  </form>
+                  
+                  <style>
+                    .no-outline:focus {
+                      outline: none;
+                      box-shadow: none;
+                    }
+                  </style>
+                  
+                  
                 </div>
                 </div>
                 <div class="stock">
                     <div class="stock-title">Product Stock List</div>
-                    <div class="add-products" data-bs-toggle="offcanvas" data-bs-target="#offcanvasWithBothOptionss" aria-controls="offcanvasWithBothOptions">Add Products +</div>
+                    <div class="add-products btn btn-dark " data-bs-toggle="offcanvas" data-bs-target="#offcanvasWithBothOptionss" aria-controls="offcanvasWithBothOptions">Add Products +</div>
                 </div>
             <section id="stock-list">
                 

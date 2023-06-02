@@ -15,7 +15,7 @@ body{
 
 #container{
     width: 80vw;
-    height: 600px;
+    height: 96vh;
     display: flex;
     justify-content: space-between;
     margin-top: 20px;
@@ -32,6 +32,11 @@ body{
     justify-content: center;
     height: 100%;
     background-color: #6B8863;
+}
+
+#calc-price{
+    margin: 10px auto 0 auto;
+    width: 90%;
 }
 
 .aside h5{
@@ -72,22 +77,14 @@ body{
     align-items: center;
 }
 
-#add-category{
-    width: 90%;
-    margin: 10px 0;
-    height: 30px;
-    border: none;
-    outline: none;
-    cursor: pointer;
-    border-radius: 35px;
-}
+
 
 .error{
     color: #FF0000;
 }
 
 .main{
-    width: calc(100% - 200px);
+    width: calc(100% - 140px);
     display: flex;
     flex-direction: column;
     margin: 0 auto;
@@ -114,10 +111,9 @@ body{
 #overview{
     margin-top: 20px;
     width: 100%;
-    height: 170px;
+    height: fit-content;
     display: flex;
     flex-direction: column;
-    justify-content: space-evenly;
 }
 
 #view_title{
@@ -126,13 +122,23 @@ body{
 
 .overviews{
     display: flex;
-    justify-content: space-between;
+    flex-wrap: wrap;
+    /*overflow-x: scroll;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+    width: 100%;*/
 }
 
 .overview{
     height: 120px;
     width: 170px;
-    border-radius: 5px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    margin: 0 10px 0 0;
+    border-radius: 10px;
+    scroll-snap-align: start;
 }
 
 .item-4{
@@ -191,11 +197,7 @@ body{
     color: #ebeeeb;
 }
 
-.bake{
-    cursor: pointer;
-    width: 100%;
-    margin-left: 10px;
-}
+
 
 .bake a{
     color: #ffffff;
