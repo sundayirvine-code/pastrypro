@@ -43,7 +43,6 @@ class User(UserMixin, db.Model):
     def check_password(self, password):
         return check_password_hash(self.password_hash, password)
 
-# Stores Stock Items
 class Product(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False)
@@ -112,17 +111,9 @@ def seed_unit_of_measurement():
 
     db.session.commit()
 
-class BakedProductName(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(100), nullable=False)
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
-
-
-    def __str__(self):
-        return self.name
 class BakedProduct(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    name_id = db.Column(db.Integer, db.ForeignKey('baked_product_name.id'), nullable=False)
+    name = db.Column(db.String(100), nullable=False)
     quantity = db.Column(db.Numeric(precision=8, scale=2), nullable=False)
     cost_price = db.Column(db.Numeric(precision=8, scale=2), nullable=False)
     selling_price = db.Column(db.Numeric(precision=8, scale=2), nullable=False)
@@ -135,8 +126,23 @@ class BakedProduct(db.Model):
     def __repr__(self):
         return f"BakedProduct('{self.name}', '{self.quantity}', '{self.cost_price}', '{self.selling_price}', '{self.date_baked}')"
 
+    def calculate_selling_price(self, cost_price, labour_cost, electricity_cost, transportation_cost):
+        # Calculate the selling price based on the cost price and other factors
+        # Tax is set to 16% (0.16)
 
-# stores info about stock items used to bake a particular product    
+        tax_percentage = Decimal('0.16')
+
+        total_cost = Decimal(cost_price) + Decimal(labour_cost) + Decimal(electricity_cost) + Decimal(transportation_cost)
+        selling_price = total_cost / (Decimal('1.00') - tax_percentage)
+
+        # Approximating the selling price to the nearest 0.25 value
+        selling_price = round(selling_price * Decimal('4')) / Decimal('4')
+
+        self.selling_price = selling_price
+
+        return selling_price
+
+    
 class BakedProductIngredient(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     baked_product_id = db.Column(db.Integer, db.ForeignKey('baked_product.id'), nullable=False)
@@ -255,7 +261,7 @@ def inventory():
     .filter(BakedProduct.date_baked.between(start_date, end_date)) \
     .group_by(BakedProductIngredient.product_id) \
     .order_by(func.sum(BakedProductIngredient.quantity).desc()) \
-    .limit(4) \
+    .limit(6) \
     .subquery()
 
     top_ingredients = db.session.query(Product.name, top_ingredient_ids.c.total_quantity, UnitOfMeasurement.name) \
@@ -469,19 +475,21 @@ def category_products():
 @app.route('/bake', methods=['GET', 'POST'])
 @login_required
 def bake():
-    user_id = current_user.id
     if request.method == 'GET':
-        baked_products = BakedProductName.query.filter_by(user_id=user_id).all()
         units = UnitOfMeasurement.query.all()
-        return render_template('bake.html', units = units, baked_products=baked_products)
+        return render_template('bake.html', units = units)
     else:
         data = request.get_json()
-        name_id = data.get('name_id')
+        pastry_name = data.get('name')
         quantity = data.get('quantity')
         totalPrice = data.get('totalPrice')
+        labor_cost = data.get('laborCost')
+        electricity_cost = data.get('electricityCost')
+        rent_cost = data.get('rentCost')
+        water_cost = data.get('waterCost')
+        transportation_cost = data.get('transportationCost')
         unit_id = data.get('unit')
         ingredients = data.get('ingredients')
-        selling_price = data.get('selling_price')
 
         # Check ingredient availability
         for ingredient in ingredients:
@@ -498,8 +506,19 @@ def bake():
 
         # Create baked product
         cost_price = Decimal(totalPrice)
+        user_id = current_user.id
         user = User.query.get(user_id)
-        baked_product = BakedProduct(name_id=name_id, quantity=quantity, cost_price=cost_price, unit_of_measurement_id=unit_id, user=user, selling_price=Decimal(selling_price))
+        baked_product = BakedProduct(name=pastry_name, quantity=quantity, cost_price=cost_price, unit_of_measurement_id=unit_id, user=user)
+
+        # Calculate selling price
+        selling_price = baked_product.calculate_selling_price(
+            cost_price=cost_price,
+            labour_cost=Decimal(labor_cost),
+            electricity_cost=Decimal(electricity_cost),
+            #rent_cost=Decimal(rent_cost),
+            #water_cost=Decimal(water_cost),
+            transportation_cost=Decimal(transportation_cost)
+        )
 
         db.session.add(baked_product)
         db.session.flush()
@@ -558,47 +577,6 @@ def delete_product(id):
     except:
         return jsonify(error='Failed to delete the product'), 500
   
-
-from titlecase import titlecase
-
-@app.route('/create_baked_product', methods=['POST'])
-@login_required
-def create_baked_product():
-    if request.method == 'POST':
-        try:
-            user_id = current_user.id
-            name = request.form.get('name')
-
-            # Clean the name by removing trailing spaces and convert to title case
-            cleaned_name = titlecase(name.strip())
-
-            # Check if the user has already created the product
-            existing_product = BakedProductName.query.filter_by(name=cleaned_name, user_id=user_id).first()
-            if existing_product:
-                return jsonify({'error': 'You have already created this baked product.'})
-
-            # Create a new BakedProductName instance
-            product_name = BakedProductName(name=cleaned_name, user_id=user_id)
-            db.session.add(product_name)
-            db.session.commit()
-
-            # Prepare the response JSON with the product details
-            response = {
-                'message': 'Baked product created successfully.',
-                'product': {
-                    'name': product_name.name,
-                    'id': product_name.id
-                }
-            }
-
-            return jsonify(response)
-        except Exception as e:
-            # Handle the specific exception or provide a generic error message
-            return jsonify({'error': 'Failed to create baked product. Please try again.'})
-
-
-
-
 
 if __name__ == '__main__':
     with app.app_context():

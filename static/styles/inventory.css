@@ -34,7 +34,7 @@ body{
     background-color: #6B8863;
 }
 
-#calc-price{
+#calc-price, #detailedAnalytics, #addpastry{
     margin: 10px auto 0 auto;
     width: 90%;
 }

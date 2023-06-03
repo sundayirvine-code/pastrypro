@@ -95,8 +95,8 @@
                     <div>
                         <a href="{{ url_for('inventory') }}"><i class="fa-solid fa-arrow-left"></i>  Inventory</a>
                     </div>
-                    <div>
-                        <span><i data-bs-toggle="offcanvas" data-bs-target="#offcanvasWithBothOptions" aria-controls="offcanvasWithBothOptions" class="fa-solid fa-pencil" style="cursor: pointer;"></i></span>
+                    <div style="margin-top: 5px;">
+                        <span data-bs-toggle="offcanvas" data-bs-target="#offcanvasWithBothOptions" aria-controls="offcanvasWithBothOptions" class="btn btn-dark" style="cursor: pointer; padding: 3px 6px;">Edit  <i  class="fa-solid fa-pencil" ></i></span>
                     </div>
                 </div>
               </div>
@@ -118,44 +118,6 @@
           </div>
         </div>
       </div>
-<!--
-      <div class="offcanvas offcanvas-start" data-bs-scroll="true" tabindex="-1" id="offcanvasWithBothOptions" aria-labelledby="offcanvasWithBothOptionsLabel">
-        <div class="offcanvas-header">
-            <h5 class="offcanvas-title" id="offcanvasWithBothOptionsLabel">Backdrop with scrolling</h5>
-            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
-        </div>
-        <div class="offcanvas-body">
-            <p>Try scrolling the rest of the page to see this option in action.</p>
-        </div>
-        </div>
-        <div id="container">
-            <section id="image">
-                <img src="{{product.image_url}}" alt="Product image">
-            </section>
-            <section id="details">
-               <div class="back">
-                <a href="{{ url_for('inventory') }}"><i class="fa-solid fa-arrow-left"></i>    Back to Inventory</a>
-                <span><i data-bs-toggle="offcanvas" data-bs-target="#offcanvasWithBothOptions" aria-controls="offcanvasWithBothOptions" class="fa-solid fa-pencil"></i></span>
-               </div>
-               <div>
-                <p class="category">{{product.category_name}}</p>
-                <h1 class="name">{{product.name}}</h1>
-                <div class="priceQ">
-                    <div>
-                        <p>Price</p>
-                        <h3 class="price">{{product.price}}</h3>
-                    </div>
-                    <div>
-                        <p>Quantity</p>
-                        <h3 class="quantity">{{product.quantity}}</h3>
-                    </div>
-                </div>
-               </div>
-               <div>
-                <p class="description">{{product.description}}</p>
-               </div>
-            </section>
-        </div>-->
 <script src="/static/scripts/update_product.js"></script>
 </body>
 </html>

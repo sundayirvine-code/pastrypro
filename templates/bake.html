@@ -14,13 +14,47 @@
     <script src="https://code.jquery.com/ui/1.13.0/jquery-ui.min.js"></script>
     <link rel="stylesheet" href="https://code.jquery.com/ui/1.13.0/themes/smoothness/jquery-ui.css">
 </head>
-<body>   
-      <h1 class="title">Bake Pastry</h1>
+<body>
+  <div class="offcanvas offcanvas-end" data-bs-scroll="true" tabindex="-1" id="offcanvasWithBothOptionss" aria-labelledby="offcanvasWithBothOptionsLabel">
+    <div class="offcanvas-header">
+        <h5 class="offcanvas-title" id="offcanvasWithBothOptionsLabell">Add New Baked Product</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+    </div>
+    <div class="offcanvas-body">
+      <form id="create-product-form" class="row g-3">
+        <div class="form-floating col-md-12">
+            <input type="text" class="form-control no-outline" id="product_name" name="product_name" required autocomplete="off">
+            <label for="product_name">Name</label>
+        </div>
+
+        <button type="submit" class="btn btn-dark">Create</button>
+      </form>
+    </div>
+    </div>
+      <div id="top">
+        <div class="add-products btn btn-dark " data-bs-toggle="offcanvas" data-bs-target="#offcanvasWithBothOptionss" aria-controls="offcanvasWithBothOptions">Create Baked Product +</div>
+        <h1 class="title">Price Calculator</h1> 
+      </div>  
       <div id="container">
         <form id="bakeForm">
           <div class="form-floating mb-3">
-            <input type="text" id="name" class="form-control no-outline" name="name" placeholder="Vanilla Cake" required autocomplete="off">
-            <label for="name">Pastry Name:</label>
+            <select id="name" name="name" class="form-select form-control no-outline" required placeholder="Vanilla Cake" autocomplete="off">
+              <option value=""></option>
+              {% for baked_product in baked_products %}
+                <option value="{{baked_product.id}}">{{baked_product.name}}</option>
+              {% endfor %}
+            </select>
+            <label for="name">Choose what to bake:</label>
+          </div>
+
+          <div class="form-floating mb-3">
+            <select id="inputUnit" class="form-select form-control no-outline" required placeholder="grams" autocomplete="off">
+              <option value=""></option>
+              {% for unit in units %}
+                <option value="{{unit.id}}">{{unit.name}}</option>
+              {% endfor %}
+            </select>
+            <label for="Units">Units:</label>
           </div>
         
           <div class="form-floating mb-3">
@@ -34,44 +68,32 @@
           </div>
           
           <div class="form-floating mb-3">
-            <input type="number" id="electricityCost" name="electricityCost" required class="form-control no-outline" placeholder="0.00" min="0">
-            <label for="electricityCost">Electricity Cost:</label>
-          </div>
-          
-          <!--<div class="form-floating mb-3">
-            <input type="number" id="rentCost" name="rentCost" required class="form-control no-outline" placeholder="0.00" min="0">
-            <label for="rentCost">Rent Cost:</label>
-          </div>
-          
-          <div class="form-floating mb-3">
-            <input type="number" id="waterCost" name="waterCost" required class="form-control no-outline" placeholder="0.00" min="0">
-            <label for="waterCost">Water Cost:</label>
-          </div>-->
-          
-          <div class="form-floating mb-3">
             <input type="number" id="transportationCost" name="transportationCost" required class="form-control no-outline" placeholder="0.00" min="0">
             <label for="transportationCost">Transportation Cost:</label>
+          </div>
+
+          <div class="form-floating mb-3">
+            <input type="number" id="electricityCost" name="electricityCost" required class="form-control no-outline" placeholder="0.00" min="0">
+            <label for="electricityCost">miscellaneous Cost:</label>
           </div>
         
           <div class="form-floating mb-3">
             <input type="text" id="ingredients" name="ingredients" required class="form-control no-outline" placeholder="Flour" autocomplete="off">
-            <label for="ingredients">Ingredients:</label>
+            <label for="ingredients">search Ingredients:</label>
           </div>
-        
-          <div class="form-floating mb-3">
-            <select id="inputUnit" class="form-select form-control no-outline" required placeholder="grams" autocomplete="off">
-              <option value=""></option>
-              {% for unit in units %}
-                <option value="{{unit.id}}">{{unit.name}}</option>
-              {% endfor %}
-            </select>
-            <label for="Units">Units:</label>
-          </div>
-        
+  
           <button type="button" id="finishBaking" class="btn btn-dark">Finish Baking</button>
         </form>
+
+        <style>
+          .form-control:focus {
+            outline: none;
+            box-shadow: none;
+          }
+        </style>
     
       <section id="list">
+        
         <ul id="ingredientList"></ul>
         <div class="form-floating mb-3">
           <input type="text" id="totalPrice" name="totalPrice" disabled class="form-control" required>
@@ -84,6 +106,7 @@
       </section>   
       </div>
     <script src="/static/scripts/bake.js"></script>
+    <script src="/static/scripts/bakedproduct.js"></script>
   </body>
 </html>
 

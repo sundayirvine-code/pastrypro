@@ -32,7 +32,6 @@
         </ul>
       {% endif %}
     {% endwith %}
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
   <script>
     $(document).ready(function() {
       setTimeout(function() {
@@ -68,6 +67,7 @@
             </div>
 
             <a href="{{ url_for('bake') }}" class="btn btn-dark" id="calc-price" style="color: white;">Price Calc</a>
+            <a href="{{ url_for('bake') }}" class="btn btn-dark" id="detailedAnalytics" style="color: white;">Analytics</a>
 
         </aside>
         <main class="main">
@@ -119,7 +119,7 @@
             
             <div class="offcanvas offcanvas-end" data-bs-scroll="true" tabindex="-1" id="offcanvasWithBothOptionss" aria-labelledby="offcanvasWithBothOptionsLabel">
                 <div class="offcanvas-header">
-                    <h5 class="offcanvas-title" id="offcanvasWithBothOptionsLabell">Add New Product</h5>
+                    <h5 class="offcanvas-title" id="offcanvasWithBothOptionsLabell">Add New Stock Item</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
                 </div>
                 <div class="offcanvas-body">
@@ -193,7 +193,7 @@
                 </div>
                 <div class="stock">
                     <div class="stock-title">Product Stock List</div>
-                    <div class="add-products btn btn-dark " data-bs-toggle="offcanvas" data-bs-target="#offcanvasWithBothOptionss" aria-controls="offcanvasWithBothOptions">Add Products +</div>
+                    <div class="add-products btn btn-dark " data-bs-toggle="offcanvas" data-bs-target="#offcanvasWithBothOptionss" aria-controls="offcanvasWithBothOptions">Add Stock Item +</div>
                 </div>
             <section id="stock-list">
                 
