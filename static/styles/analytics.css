@@ -1,0 +1,23 @@
+body{
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+#container{
+    width: 75vw;
+    display: flex;
+    justify-content: space-evenly;
+    margin-top: 30px;
+}
+
+#container div{
+    width: 100%;
+}
+
+#nav-tabContent{
+    margin-top: 20px;
+}

@@ -67,7 +67,7 @@
             </div>
 
             <a href="{{ url_for('bake') }}" class="btn btn-dark" id="calc-price" style="color: white;">Price Calc</a>
-            <a href="{{ url_for('bake') }}" class="btn btn-dark" id="detailedAnalytics" style="color: white;">Analytics</a>
+            <a href="{{ url_for('analytics') }}" class="btn btn-dark" id="detailedAnalytics" style="color: white;">Analytics</a>
 
         </aside>
         <main class="main">
@@ -138,10 +138,27 @@
                         <label for="inputName">Name</label>
                       </div>
                     </div>
+                    <div class="col-6">
+                      <div class="form-floating">
+                        <select id="inputUnit" class="form-select no-outline" required autocomplete="off">
+                          <option value=""></option>
+                          {% for unit in units %}
+                            <option value="{{unit.id}}">{{unit.name}}</option>
+                          {% endfor %}
+                        </select>
+                        <label for="inputUnit">Unit of Measure</label>
+                      </div>
+                    </div>
                     <div class="col-md-6">
                       <div class="form-floating">
                         <input type="number" step="0.01" class="form-control no-outline" id="inputPrice" required min="0">
-                        <label for="inputPrice">Price</label>
+                        <label for="inputPrice">Price per unit</label>
+                      </div>
+                    </div>
+                    <div class="col-md-6">
+                      <div class="form-floating">
+                        <input type="number" class="form-control no-outline" id="inputQuantity" required min="0">
+                        <label for="inputQuantity">Number of Units</label>
                       </div>
                     </div>
                     <div class="col-6">
@@ -153,23 +170,6 @@
                           {% endfor %}
                         </select>
                         <label for="inputCategory">Category</label>
-                      </div>
-                    </div>
-                    <div class="col-md-6">
-                      <div class="form-floating">
-                        <input type="number" class="form-control no-outline" id="inputQuantity" required min="0">
-                        <label for="inputQuantity">Quantity</label>
-                      </div>
-                    </div>
-                    <div class="col-6">
-                      <div class="form-floating">
-                        <select id="inputUnit" class="form-select no-outline" required autocomplete="off">
-                          <option value=""></option>
-                          {% for unit in units %}
-                            <option value="{{unit.id}}">{{unit.name}}</option>
-                          {% endfor %}
-                        </select>
-                        <label for="inputUnit">Unit</label>
                       </div>
                     </div>
                     <div class="col-12">

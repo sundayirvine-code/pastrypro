@@ -9,20 +9,22 @@ from werkzeug.security import generate_password_hash, check_password_hash
 import datetime
 import os
 from dotenv import load_dotenv
+import pymysql
+from forms import RegistrationForm, LoginForm
+from decimal import Decimal
+
+
 # Load environment variables from .env file
 load_dotenv()
-import pymysql
+
 pymysql.install_as_MySQLdb()
-
-from forms import RegistrationForm, LoginForm
-
-from decimal import Decimal
 
 app = Flask(__name__)
 
 # Configuration
 app.config['SECRET_KEY'] = '\xce!\x9e\x04\x00\x03\xdf\x88\xf1\x1b@m\xe2\xc6R\xd80\xf6H\x84\xe0e\xc1\x02'
 app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URI')
+#app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///database.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 login_manager = LoginManager(app)
@@ -54,8 +56,8 @@ class Product(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False)
     description = db.Column(db.Text, nullable=False)
-    price = db.Column(db.DECIMAL(precision=8, scale=2), nullable=False)  # Updated to use Numeric with precision and scale
-    quantity = db.Column(db.DECIMAL(precision=8, scale=2), default=0.0)  # Updated to use Numeric with precision and scale
+    price = db.Column(db.DECIMAL(precision=8, scale=2), nullable=False)  
+    quantity = db.Column(db.DECIMAL(precision=8, scale=2), default=0.0)
     image_id = db.Column(db.Integer, db.ForeignKey('image.id'), nullable=False)
     category_id = db.Column(db.Integer, db.ForeignKey('category.id'), nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False) 
@@ -65,6 +67,7 @@ class Product(db.Model):
     def __repr__(self):
         return f"Product('{self.name}', '{self.price}')"
 
+# Stores the different stock item categories
 class Category(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(50), nullable=False, unique=False)
@@ -74,6 +77,7 @@ class Category(db.Model):
     def __repr__(self):
         return f"Category('{self.name}')"
 
+# stores the URL for the product image
 class Image(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     image_url = db.Column(db.String(255), nullable=False)
@@ -82,6 +86,7 @@ class Image(db.Model):
         return f"Image('{self.image_url}')"
 
 
+# Has pre defined utits of measurements that coulb used in the pastry industry
 class UnitOfMeasurement(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(20), unique=True, nullable=False)
@@ -109,6 +114,7 @@ default_units = [
     # Add more units as needed
 ]
 
+# Lodas the units of measurement to our database
 def seed_unit_of_measurement():
     for unit_data in default_units:
         unit = UnitOfMeasurement.query.filter_by(name=unit_data['name']).first()
@@ -118,14 +124,16 @@ def seed_unit_of_measurement():
 
     db.session.commit()
 
+# Stores the names if different baked products like Muffins, bread etc
 class BakedProductName(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
 
-
     def __str__(self):
         return self.name
+    
+# Stores a record of each time a baked product is actually baked for sale
 class BakedProduct(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name_id = db.Column(db.Integer, db.ForeignKey('baked_product_name.id'), nullable=False)
@@ -142,12 +150,12 @@ class BakedProduct(db.Model):
         return f"BakedProduct('{self.name}', '{self.quantity}', '{self.cost_price}', '{self.selling_price}', '{self.date_baked}')"
 
 
-# stores info about stock items used to bake a particular product    
+# stores info about stock items(ingredients) used to bake a particular product    
 class BakedProductIngredient(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     baked_product_id = db.Column(db.Integer, db.ForeignKey('baked_product.id'), nullable=False)
     product_id = db.Column(db.Integer, db.ForeignKey('product.id'), nullable=False)
-    quantity = db.Column(db.DECIMAL(precision=8, scale=2), nullable=False)  # Updated to use Numeric with precision and scale
+    quantity = db.Column(db.DECIMAL(precision=8, scale=2), nullable=False)  
     date_used = db.Column(db.DateTime, default=datetime.datetime.utcnow)
 
     def __repr__(self):
@@ -244,6 +252,83 @@ def get_past_week_dates():
     end_date = datetime.datetime.now()
     start_date = end_date - datetime.timedelta(days=7)
     return start_date, end_date
+
+@app.route('/analytics')
+@login_required
+def analytics():
+    user_id = current_user.id
+    
+    # Calculate the start and end dates for the past 7 days
+    start_date, end_date = get_past_week_dates()
+
+    top_ingredient_ids = db.session.query(
+        BakedProductIngredient.product_id,
+        func.sum(BakedProductIngredient.quantity).label('total_quantity')
+    ).join(BakedProduct).filter(
+        BakedProduct.date_baked.between(start_date, end_date)
+    ).group_by(BakedProductIngredient.product_id).order_by(
+        func.sum(BakedProductIngredient.quantity).desc()
+    ).subquery()
+
+    total_quantity = db.session.query(func.sum(top_ingredient_ids.c.total_quantity)).scalar()
+    top_ingredients = db.session.query(
+        Product.name,
+        top_ingredient_ids.c.total_quantity,
+        UnitOfMeasurement.name,
+        Product.quantity
+    ).join(top_ingredient_ids, Product.id == top_ingredient_ids.c.product_id).join(
+        UnitOfMeasurement, Product.unit_of_measurement_id == UnitOfMeasurement.id
+    ).filter(
+        Product.user_id == user_id
+    ).all()
+
+    # Calculate the percentage and quantity_remaining for each ingredient
+    top_ingredients_with_percentage = []
+    for ingredient in top_ingredients:
+        name = ingredient[0]
+        quantity = ingredient[1]
+        unit = ingredient[2]
+        quantity_remaining = ingredient[3]
+        percentage = round((quantity / (quantity + quantity_remaining)) * 100)
+        top_ingredients_with_percentage.append((name, quantity, unit, percentage, quantity_remaining))
+
+    # Most used ingredients (stock items)
+    top_ingredients_with_index = [(index + 1, ingredient) for index, ingredient in enumerate(top_ingredients_with_percentage)]
+
+    # baked product analytics
+    baked_products = db.session.query(
+        BakedProduct,
+        BakedProductName.name
+    ).join(
+        BakedProductName, BakedProduct.name_id == BakedProductName.id
+    ).filter(
+        BakedProduct.user_id == user_id,
+        BakedProduct.date_baked.between(start_date, end_date)
+    ).order_by(BakedProduct.date_baked).all()
+
+    # Format the query results into a table
+    table_data = []
+    for index, (baked_product, product_name) in enumerate(baked_products, start=1):
+        table_data.append({
+            'Index': index,
+            'Baked Product Name': product_name,
+            'Cost Price': baked_product.cost_price,
+            'Selling Price': baked_product.selling_price,
+            'Quantity Baked': baked_product.quantity,
+            'Date Baked': baked_product.date_baked
+        })
+
+    return render_template('analytics.html',
+                           top_ingredients_with_index=top_ingredients_with_index,
+                           table_data=table_data,
+                           get_unit_of_measurement_name=get_unit_of_measurement_name,
+                           get_product_status=get_product_status,
+                           get_category_name=get_category_name)
+
+
+
+
+
 
 @app.route('/inventory')
 @login_required
