@@ -27,7 +27,7 @@ login_manager.login_view = 'login'
 
 # Database setup
 db = SQLAlchemy(app)
-migrate = Migrate(app, db)
+migrate = Migrate(app, db, render_as_batch=True)
 
 # Models
 class User(UserMixin, db.Model):
