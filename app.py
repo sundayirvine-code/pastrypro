@@ -19,7 +19,7 @@ app = Flask(__name__)
 
 # Configuration
 app.config['SECRET_KEY'] = '\xce!\x9e\x04\x00\x03\xdf\x88\xf1\x1b@m\xe2\xc6R\xd80\xf6H\x84\xe0e\xc1\x02'
-app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://Irvine:Irvine@Irvine.mysql.pythonanywhere-services.com/Irvine$default'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://Irvine:I$a80899819@Irvine.mysql.pythonanywhere-services.com/Irvine$default'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 login_manager = LoginManager(app)
