@@ -8,6 +8,9 @@ from flask_login import LoginManager, login_required, current_user, UserMixin, l
 from werkzeug.security import generate_password_hash, check_password_hash
 import datetime
 
+import pymysql
+pymysql.install_as_MySQLdb()
+
 from forms import RegistrationForm, LoginForm
 
 from decimal import Decimal
@@ -16,7 +19,7 @@ app = Flask(__name__)
 
 # Configuration
 app.config['SECRET_KEY'] = '\xce!\x9e\x04\x00\x03\xdf\x88\xf1\x1b@m\xe2\xc6R\xd80\xf6H\x84\xe0e\xc1\x02'
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///database.db'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://Irvine:Irvine@Irvine.mysql.pythonanywhere-services.com/Irvine$default'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 login_manager = LoginManager(app)
@@ -48,8 +51,8 @@ class Product(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False)
     description = db.Column(db.Text, nullable=False)
-    price = db.Column(db.Numeric(precision=8, scale=2), nullable=False)  # Updated to use Numeric with precision and scale
-    quantity = db.Column(db.Numeric(precision=8, scale=2), default=0.0)  # Updated to use Numeric with precision and scale
+    price = db.Column(db.DECIMAL(precision=8, scale=2), nullable=False)  # Updated to use Numeric with precision and scale
+    quantity = db.Column(db.DECIMAL(precision=8, scale=2), default=0.0)  # Updated to use Numeric with precision and scale
     image_id = db.Column(db.Integer, db.ForeignKey('image.id'), nullable=False)
     category_id = db.Column(db.Integer, db.ForeignKey('category.id'), nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False) 
@@ -123,9 +126,9 @@ class BakedProductName(db.Model):
 class BakedProduct(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name_id = db.Column(db.Integer, db.ForeignKey('baked_product_name.id'), nullable=False)
-    quantity = db.Column(db.Numeric(precision=8, scale=2), nullable=False)
-    cost_price = db.Column(db.Numeric(precision=8, scale=2), nullable=False)
-    selling_price = db.Column(db.Numeric(precision=8, scale=2), nullable=False)
+    quantity = db.Column(db.DECIMAL(precision=8, scale=2), nullable=False)
+    cost_price = db.Column(db.DECIMAL(precision=8, scale=2), nullable=False)
+    selling_price = db.Column(db.DECIMAL(precision=8, scale=2), nullable=False)
     date_baked = db.Column(db.DateTime, default=datetime.datetime.utcnow)
     unit_of_measurement_id = db.Column(db.Integer, db.ForeignKey('unit_of_measurement.id'), nullable=False)
     ingredients = db.relationship('BakedProductIngredient', backref='baked_product', lazy=True)
@@ -141,7 +144,7 @@ class BakedProductIngredient(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     baked_product_id = db.Column(db.Integer, db.ForeignKey('baked_product.id'), nullable=False)
     product_id = db.Column(db.Integer, db.ForeignKey('product.id'), nullable=False)
-    quantity = db.Column(db.Numeric(precision=8, scale=2), nullable=False)  # Updated to use Numeric with precision and scale
+    quantity = db.Column(db.DECIMAL(precision=8, scale=2), nullable=False)  # Updated to use Numeric with precision and scale
     date_used = db.Column(db.DateTime, default=datetime.datetime.utcnow)
 
     def __repr__(self):
