@@ -15,10 +15,10 @@ body{
 
 #container{
     width: 80vw;
-    height: 96vh;
+    min-height: 600px;
     display: flex;
     justify-content: space-between;
-    margin-top: 20px;
+    margin: 20px 0;
     background-color: #ebeeeb;
     border-radius: 15px;
 }
@@ -27,11 +27,12 @@ body{
     border-top-left-radius: 15px;
     border-bottom-left-radius: 15px;
     width: 120px;
+    max-height: 600px;
     display: flex;
     flex-direction: column;
     justify-content: center;
-    height: 100%;
     background-color: #6B8863;
+    padding: 10px 0;
 }
 
 #calc-price, #detailedAnalytics, #addpastry{
@@ -98,13 +99,16 @@ body{
 
 .text h1{
     margin: 0;
-    padding: 0;
+    padding: 5px 0 0 0;
+    font-family: 'Poppins', sans-serif;
+    color: #444444;
+    font-weight:900;
 }
 
 .text p, .date{
     margin: 0;
     padding: 0;
-    font-size: 15px;
+    font-size: 12px;
     font-family: Verdana, Geneva, Tahoma, sans-serif;
 }
 
@@ -116,29 +120,48 @@ body{
     flex-direction: column;
 }
 
-#view_title{
-    font-size: 17px;
+.overview div:nth-child(1) {
+    font-family: Verdana, Geneva, Tahoma, sans-serif;
+    font-size: 14px;
+  }
+
+.overview div:nth-child(2) {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 40px;
+}
+
+.overview div:nth-child(3) {
+    font-family: Verdana, Geneva, Tahoma, sans-serif;
+    font-size: 14px;
+  }
+
+.view_title{
+    font-family: 'Poppins', sans-serif;
 }
 
 .overviews{
+    margin-top: 5px;
     display: flex;
     flex-wrap: wrap;
-    /*overflow-x: scroll;
+    /*overflow: auto;
+    height: 130px;
+    overflow-x: scroll;
     scroll-snap-type: x mandatory;
     -webkit-overflow-scrolling: touch;
     width: 100%;*/
 }
 
 .overview{
-    height: 120px;
-    width: 170px;
+    height: 150px;
+    width: 200px;
     display: flex;
     flex-direction: column;
-    justify-content: center;
+    justify-content: space-evenly;
     align-items: center;
-    margin: 0 10px 0 0;
+    margin: 0 20px 0 0;
     border-radius: 10px;
     scroll-snap-align: start;
+    text-align: center;
 }
 
 .item-4{
@@ -167,8 +190,12 @@ body{
 .stock{
     display: flex;
     justify-content: space-between;
-    margin-top: 20px;
+    margin-top: 10px;
     align-items: center;
+}
+
+.stock-title{
+    font-family: 'Poppins', sans-serif;
 }
 
 .add-products{

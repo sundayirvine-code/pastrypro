@@ -22,13 +22,12 @@ $(function() {
 
     var ingredientCostPrice = ingredient.price * quantity;
     costPrice += ingredientCostPrice;
-    sellingPrice = calculateSellingPrice(costPrice);
-
+    
     var li = '<li data-id="' + ingredient.id + '" data-quantity="' + quantity + '">' + ingredient.label + ' @ ' + ingredient.price + ' x ' + quantity + ' = ' + ingredientCostPrice + '</li>';
     $("#ingredientList").append(li);
 
     calculateTotalPrice(quantity, ingredient.price);
-    $("#sellingPrice").val(sellingPrice.toFixed(2));
+    
   }
 
   function calculateTotalPrice(quantity, price) {
@@ -37,19 +36,34 @@ $(function() {
   }
 
   function calculateSellingPrice(costPrice) {
-    var laborCost = $("#laborCost").val();
-    var electricityCost = $("#electricityCost").val();
-    var transportationCost = $("#transportationCost").val();
-    if (!laborCost || !electricityCost || !transportationCost) {
+    var laborCost = parseFloat($("#laborCost").val());
+    var electricityCost = parseFloat($("#electricityCost").val());
+    var transportationCost = parseFloat($("#transportationCost").val());
+  
+    if (isNaN(laborCost) || isNaN(electricityCost) || isNaN(transportationCost)) {
       alert("Please fill in all the required fields.");
       return;
     }
+  
     var taxPercentage = 0.16;
-    var totalCost = costPrice + parseFloat(laborCost) + parseFloat(electricityCost) + parseFloat(transportationCost);
+    var profitMargin = 0.2; // 20% profit margin
+  
+    var totalCost = costPrice + laborCost + electricityCost + transportationCost;
     var sellingPrice = totalCost / (1 - taxPercentage);
     
+    // Apply profit margin
+    sellingPrice *= (1 + profitMargin);
+  
     return sellingPrice.toFixed(2);
   }
+  
+
+  $("#calculate").click(function() {
+    sellingPrice = calculateSellingPrice(costPrice);
+    $("#sellPrice").val(sellingPrice);
+  })
+  
+  
 
   $("#finishBaking").click(function() {
     var name_id = $("#name").val();
@@ -78,8 +92,8 @@ $(function() {
       name_id: name_id,
       quantity: quantity,
       ingredients: ingredients,
-      totalPrice: costPrice.toFixed(2),
-      selling_price: sellingPrice.toFixed(2),
+      totalPrice: costPrice,
+      selling_price: sellingPrice,
       unit: unit
     };
 

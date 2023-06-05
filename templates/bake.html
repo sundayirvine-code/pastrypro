@@ -82,7 +82,7 @@
             <label for="ingredients">search Ingredients:</label>
           </div>
   
-          <button type="button" id="finishBaking" class="btn btn-dark">Finish Baking</button>
+          <button type="button" id="finishBaking" class="btn btn-dark">Bake This Product</button>
         </form>
 
         <style>
@@ -97,12 +97,13 @@
         <ul id="ingredientList"></ul>
         <div class="form-floating mb-3">
           <input type="text" id="totalPrice" name="totalPrice" disabled class="form-control" required>
-          <label for="totalPrice">Total Price:</label>
+          <label for="totalPrice">CostPrice:</label>
         </div>
         <div class="form-floating mb-3">
           <input type="text" id="sellPrice" name="sellPrice" disabled class="form-control" required>
           <label for="sellPrice">Selling Price:</label>
-        </div>   
+        </div>
+        <button type="button" id="calculate" class="btn btn-dark">Calculate Selling Price</button>   
       </section>   
       </div>
     <script src="/static/scripts/bake.js"></script>
