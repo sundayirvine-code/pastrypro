@@ -7,7 +7,10 @@ from flask_migrate import Migrate
 from flask_login import LoginManager, login_required, current_user, UserMixin, login_user, logout_user
 from werkzeug.security import generate_password_hash, check_password_hash
 import datetime
-
+import os
+from dotenv import load_dotenv
+# Load environment variables from .env file
+load_dotenv()
 import pymysql
 pymysql.install_as_MySQLdb()
 
@@ -19,7 +22,7 @@ app = Flask(__name__)
 
 # Configuration
 app.config['SECRET_KEY'] = '\xce!\x9e\x04\x00\x03\xdf\x88\xf1\x1b@m\xe2\xc6R\xd80\xf6H\x84\xe0e\xc1\x02'
-app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://Irvine:I$a80899819@Irvine.mysql.pythonanywhere-services.com/Irvine$default'
+app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URI')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 login_manager = LoginManager(app)
