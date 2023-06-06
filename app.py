@@ -147,7 +147,7 @@ class BakedProduct(db.Model):
     user = db.relationship('User', backref=db.backref('baked_products', lazy=True))
 
     def __repr__(self):
-        return f"BakedProduct('{self.name}', '{self.quantity}', '{self.cost_price}', '{self.selling_price}', '{self.date_baked}')"
+        return f"BakedProduct('{self.name_id}', '{self.quantity}', '{self.cost_price}', '{self.selling_price}', '{self.date_baked}')"
 
 
 # stores info about stock items(ingredients) used to bake a particular product    
@@ -318,16 +318,37 @@ def analytics():
             'Date Baked': baked_product.date_baked
         })
 
+    # Get all baked products for the specific user
+    baked_products = BakedProduct.query.filter_by(user_id=user_id).all()
+
+    # Calculate the total number of unique ingredients used
+    unique_ingredients = set(ingredient.product_id for product in baked_products for ingredient in product.ingredients)
+    total_unique_ingredients = len(unique_ingredients)
+
+    # Calculate the percentage of ingredients each baked product uses
+    baked_product_percentages = [
+        (product, len(product.ingredients), round((len(product.ingredients) / total_unique_ingredients) * 100, 2))
+        for product in baked_products
+    ]
+
+    # Retrieve the names of the baked products
+    baked_product_names = BakedProductName.query.filter_by(user_id=user_id).all()
+    baked_product_names_dict = {name.id: name.name for name in baked_product_names}
+
+    # Update the baked_product_percentages list to include the product names
+    baked_product_percentages_with_names = [
+        (baked_product_names_dict.get(product.name_id), *product_data)
+        for product, *product_data in baked_product_percentages
+    ]
+
+
     return render_template('analytics.html',
                            top_ingredients_with_index=top_ingredients_with_index,
                            table_data=table_data,
                            get_unit_of_measurement_name=get_unit_of_measurement_name,
+                           baked_product_percentages=baked_product_percentages_with_names,
                            get_product_status=get_product_status,
                            get_category_name=get_category_name)
-
-
-
-
 
 
 @app.route('/inventory')
