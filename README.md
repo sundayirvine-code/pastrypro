@@ -9,13 +9,11 @@ With PastryPro, bakers can efficiently monitor and control their inventory, ensu
 - [Usage](#usage)
 - [Technologies Used](#technologies-used)
 - [Configuration](#configuration)
-- [Development](#development)
 - [Roadmap](#roadmap)
 - [Troubleshooting](#troubleshooting)
 - [License](#license)
 - [Acknowledgements](#acknowledgements)
 - [Contact Information](#contact-information)
-- [Additional Documentation](#additional-documentation)
 
 ## Installation
 To install PastryPro on your local development environment, follow these steps:
