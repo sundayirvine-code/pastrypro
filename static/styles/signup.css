@@ -96,6 +96,7 @@ form input{
     background-color: #1c1c1c;
     color: #ffff;
     padding-left: 0;
+    cursor: pointer;
 }
 
 form label{
