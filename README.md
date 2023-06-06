@@ -114,7 +114,9 @@ To configure the project and connect it to your database, follow these steps:
 2. Locate the `DATABASE_URI` variable and replace its value with your unique database information.
 
    Example:
-   DATABASE_URI=mysql+pymysql://username:password@localhost:3306/mydatabase  
+   ```python
+   DATABASE_URI=mysql+pymysql://username:password@localhost:3306/mydatabase
+   ```
 
 Make sure to update the username, password, host, and database name based on your own configuration.
 
@@ -178,7 +180,7 @@ We also extend our gratitude to all the individuals, developers, and communities
 ## Contact Information
 For any inquiries or feedback regarding PastryPro, you can reach out to the project maintainer, Irvine Sunday, using the following contact information:
 
-GitHub: sundayirvine-code
-LinkedIn: Irvine Sunday
-Portfolio: Irvine Sunday's Portfolio
+GitHub: [sundayirvine-code](https://github.com/sundayirvine-code/)  
+LinkedIn: [Irvine Sunday](https://www.linkedin.com/in/irvine-sunday-84104119b/)
+Portfolio: [Irvine Sunday's Portfolio](https://irvine-sunday-portfolio.vercel.app/)
 Feel free to connect with us through these platforms for any questions, suggestions, or collaboration opportunities. We look forward to hearing from you!
