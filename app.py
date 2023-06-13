@@ -438,6 +438,12 @@ def login():
 @app.route('/logout')
 @login_required
 def logout():
+    """
+    Log out the current user.
+
+    Returns:
+        redirect: Redirects the user to the home page.
+    """
     logout_user()
     flash('You have been logged out.', 'info')
     return redirect(url_for('home'))
