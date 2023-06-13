@@ -1010,6 +1010,17 @@ def bake():
 @app.route('/ingredients/search')
 @login_required
 def search_ingredients():
+    """
+    Search for ingredients based on a given search term.
+
+    This route is accessible only to logged-in users and is used to search for ingredients 
+    based on a provided search term. The search is case-insensitive and returns ingredients 
+    that match the search term, along with their IDs, labels, values, and prices, in a JSON response.
+
+    Returns:
+        - A JSON response containing a list of ingredients that match the search term.
+          Each ingredient object in the response includes its ID, label, value, and price.
+    """
     search_term = request.args.get('term', '')
 
     ingredients = Product.query.filter(
