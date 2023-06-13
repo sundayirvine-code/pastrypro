@@ -1033,6 +1033,21 @@ def search_ingredients():
 @app.route('/delete_product/<int:id>', methods=['DELETE'])
 @login_required
 def delete_product(id):
+    """
+    Delete a product.
+
+    This route is accessible only to logged-in users. It allows the deletion of a product
+    with the specified ID. The product is retrieved from the database based on the provided ID.
+    If the product is found and the current user is the owner of the product or an admin user,
+    the product is deleted from the database. Otherwise, an error message is returned.
+
+    Args:
+        - id (int): The ID of the product to be deleted.
+
+    Returns:
+        - A JSON response containing a success message if the product is deleted successfully.
+          If the product is not found or the deletion fails, an error message is returned.
+    """
     product = Product.query.get_or_404(id)
 
     # Check if the current user is the owner of the product
