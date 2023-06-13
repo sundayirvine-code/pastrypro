@@ -933,6 +933,19 @@ def category_products():
 @app.route('/bake', methods=['GET', 'POST'])
 @login_required
 def bake():
+    """
+    Create a baked product.
+
+    This route is accessible via GET and POST requests and is only available to logged-in users. 
+    If accessed via GET, it retrieves the necessary data for baking a product, such as the available baked product names
+    and units of measurement, and renders the 'bake.html' template with the retrieved data.
+    If accessed via POST, it creates a baked product based on the provided data.
+
+    Returns:
+        - If accessed via GET, renders the 'bake.html' template with the necessary data.
+        - If accessed via POST and the baked product is successfully created, returns a JSON response with a success message.
+        - If accessed via POST and any error occurs during the creation of the baked product, returns a JSON response with an error message.
+    """
     user_id = current_user.id
     if request.method == 'GET':
         baked_products = BakedProductName.query.filter_by(user_id=user_id).all()
