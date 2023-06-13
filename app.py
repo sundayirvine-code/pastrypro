@@ -114,7 +114,7 @@ default_units = [
     # Add more units as needed
 ]
 
-# Lodas the units of measurement to our database
+# Loads the units of measurement to our database
 def seed_unit_of_measurement():
     for unit_data in default_units:
         unit = UnitOfMeasurement.query.filter_by(name=unit_data['name']).first()
