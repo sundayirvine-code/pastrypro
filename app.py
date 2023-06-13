@@ -267,15 +267,42 @@ class BakedProductIngredient(db.Model):
 
 @login_manager.user_loader
 def load_user(user_id):
+    """
+    Retrieve a user object by its ID.
+
+    Args:
+        user_id (str): The ID of the user.
+
+    Returns:
+        User: The User object corresponding to the given ID.
+    """
     return User.query.get(int(user_id))
 
 # Error handlers
 @app.errorhandler(404)
 def page_not_found(error):
+    """
+    Handle the 404 Not Found error.
+
+    Args:
+        error (Exception): The exception object representing the error.
+
+    Returns:
+        tuple: A tuple containing the rendered template for the 404 error page and the HTTP status code 404.
+    """
     return render_template('404.html'), 404
 
 @app.errorhandler(500)
 def internal_server_error(error):
+    """
+    Handle the 500 Internal Server Error.
+
+    Args:
+        error (Exception): The exception object representing the error.
+
+    Returns:
+        tuple: A tuple containing the rendered template for the 500 error page and the HTTP status code 500.
+    """
     return render_template('500.html'), 500
 
 # Routes
