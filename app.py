@@ -689,7 +689,6 @@ def inventory():
                            get_product_status=get_product_status,
                            get_category_name=get_category_name, products=products)
 
-
 @app.route("/create_product", methods=["POST"])
 @login_required
 def create_product():
@@ -762,10 +761,18 @@ def create_product():
         db.session.rollback()
         return jsonify({"error": str(e)}), 500
 
-
 @app.route('/category', methods=['POST'])
 @login_required
 def create_category():
+    """
+    Create a new category.
+
+    This route is accessible via a POST request and is only available to logged-in users. It creates a new category
+    based on the provided category name in the request body.
+
+    Returns:
+        JSON: The newly created category data if successful, or an error message if an exception occurs.
+    """
     user_id = current_user.id
     category_name = request.json['category']
     new_category = Category(name=category_name, user_id=user_id)
@@ -788,6 +795,20 @@ def create_category():
 @app.route('/product_details', methods=['GET', 'PUT'])
 @login_required
 def product_details():
+    """
+    Get or update the details of a product.
+
+    This route is accessible via GET and PUT requests and is only available to logged-in users. It retrieves the details
+    of a specific product or updates the details of a product based on the request method.
+
+    Returns:
+        If the method is GET:
+            - HTML template with the product details if the product exists.
+            - HTML template for a 404 error if the product does not exist.
+        If the method is PUT:
+            - JSON with the updated product details if the product and image exist.
+            - HTML template for a 404 error if the image does not exist.
+    """
     user_id = current_user.id  
     if request.method == 'GET':
         id = request.args.get('id')
