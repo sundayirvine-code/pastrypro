@@ -1,5 +1,7 @@
 # PastryPro
 
+![pastrypro](https://github.com/sundayirvine-code/pastrypro/assets/86722164/d8e2d586-e11f-43cc-97b5-3f670e650cdd)
+
 ## Introduction
 PastryPro is an advanced inventory management system specifically designed for bakers and pastry chefs. It is a comprehensive software solution that streamlines the process of managing and tracking ingredients, supplies, and equipment in a baking or pastry kitchen.
 With PastryPro, bakers can efficiently monitor and control their inventory, ensuring they have the right ingredients on hand to create delicious pastries and baked goods. The system provides real-time visibility into stock levels, expiration dates, and usage patterns, enabling bakers to make informed purchasing decisions and minimize waste.
@@ -179,6 +181,6 @@ We also extend our gratitude to all the individuals, developers, and communities
 For any inquiries or feedback regarding PastryPro, you can reach out to the project maintainer, Irvine Sunday, using the following contact information:
 
 GitHub: [sundayirvine-code](https://github.com/sundayirvine-code/)  
-LinkedIn: [Irvine Sunday](https://www.linkedin.com/in/irvine-sunday-84104119b/)
-Portfolio: [Irvine Sunday's Portfolio](https://irvine-sunday-portfolio.vercel.app/)
+LinkedIn: [Irvine Sunday](https://www.linkedin.com/in/irvine-sunday-84104119b/)  
+Portfolio: [Irvine Sunday's Portfolio](https://irvine-sunday-portfolio.vercel.app/)  
 Feel free to connect with us through these platforms for any questions, suggestions, or collaboration opportunities. We look forward to hearing from you!
