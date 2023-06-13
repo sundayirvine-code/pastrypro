@@ -891,6 +891,16 @@ def product_details():
 @app.route('/category_products', methods=['POST'])
 @login_required
 def category_products():
+    """
+    Get the products belonging to a specific category.
+
+    This route is accessible via POST request and is only available to logged-in users. It retrieves the products that
+    belong to a specific category based on the provided category ID.
+
+    Returns:
+        - JSON with the product data if the category ID is valid.
+        - JSON with an error message if the category ID is missing.
+    """
     category_id = request.json['id']
 
     if category_id is None:
