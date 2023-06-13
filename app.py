@@ -36,6 +36,21 @@ migrate = Migrate(app, db, render_as_batch=True)
 
 # Models
 class User(UserMixin, db.Model):
+    """
+    Represents a user in the system.
+
+    Attributes:
+        id (int): The unique identifier of the user.
+        username (str): The username of the user.
+        email (str): The email address of the user.
+        password_hash (str): The hashed password of the user.
+        is_admin (bool): Indicates whether the user is an admin or not.
+
+    Methods:
+        __repr__: Returns a string representation of the User object.
+        set_password: Sets the password for the user by generating a hash.
+        check_password: Checks if a provided password matches the user's hashed password.
+    """
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(50), unique=True, nullable=False)
     email = db.Column(db.String(120), unique=True, nullable=False)
@@ -51,8 +66,25 @@ class User(UserMixin, db.Model):
     def check_password(self, password):
         return check_password_hash(self.password_hash, password)
 
-# Stores Stock Items
 class Product(db.Model):
+    """
+    Represents a stock item.
+
+    Attributes:
+        id (int): The unique identifier of the product.
+        name (str): The name of the product.
+        description (str): The description of the product.
+        price (Decimal): The price of the product.
+        quantity (Decimal): The quantity of the product in stock.
+        image_id (int): The foreign key to the associated image for the product.
+        category_id (int): The foreign key to the associated category for the product.
+        user_id (int): The foreign key to the associated user who added the product.
+        unit_of_measurement_id (int): The foreign key to the associated unit of measurement for the product.
+        unit_of_measurement (UnitOfMeasurement): The relationship to the UnitOfMeasurement object.
+
+    Methods:
+        __repr__: Returns a string representation of the Product object.
+    """
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False)
     description = db.Column(db.Text, nullable=False)
@@ -67,8 +99,19 @@ class Product(db.Model):
     def __repr__(self):
         return f"Product('{self.name}', '{self.price}')"
 
-# Stores the different stock item categories
 class Category(db.Model):
+    """
+    Represents a stock item category.
+
+    Attributes:
+        id (int): The unique identifier of the category.
+        name (str): The name of the category.
+        user_id (int): The foreign key to the associated user who added the category.
+        user (User): The relationship to the User object.
+
+    Methods:
+        __repr__: Returns a string representation of the Category object.
+    """
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(50), nullable=False, unique=False)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
@@ -77,17 +120,34 @@ class Category(db.Model):
     def __repr__(self):
         return f"Category('{self.name}')"
 
-# stores the URL for the product image
 class Image(db.Model):
+    """
+    Represents an image associated with a product.
+
+    Attributes:
+        id (int): The unique identifier of the image.
+        image_url (str): The URL of the image.
+
+    Methods:
+        __repr__: Returns a string representation of the Image object.
+    """
     id = db.Column(db.Integer, primary_key=True)
     image_url = db.Column(db.String(255), nullable=False)
     
     def __repr__(self):
         return f"Image('{self.image_url}')"
 
-
-# Has pre defined utits of measurements that coulb used in the pastry industry
 class UnitOfMeasurement(db.Model):
+    """
+    Represents a unit of measurement for products.
+
+    Attributes:
+        id (int): The unique identifier of the unit of measurement.
+        name (str): The name of the unit of measurement.
+
+    Methods:
+        None
+    """
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(20), unique=True, nullable=False)
 
@@ -114,8 +174,13 @@ default_units = [
     # Add more units as needed
 ]
 
-# Loads the units of measurement to our database
 def seed_unit_of_measurement():
+    """
+    Seeds the database with default units of measurement.
+
+    This function loads the default units of measurement from the `default_units` list
+    and adds them to the database if they don't already exist.
+    """
     for unit_data in default_units:
         unit = UnitOfMeasurement.query.filter_by(name=unit_data['name']).first()
         if not unit:
@@ -124,8 +189,18 @@ def seed_unit_of_measurement():
 
     db.session.commit()
 
-# Stores the names if different baked products like Muffins, bread etc
 class BakedProductName(db.Model):
+    """
+    Represents the name of a baked product.
+
+    Attributes:
+        id (int): The unique identifier of the baked product name.
+        name (str): The name of the baked product.
+        user_id (int): The foreign key to the associated user who added the baked product name.
+
+    Methods:
+        __str__: Returns the string representation of the BakedProductName object.
+    """
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
@@ -133,8 +208,25 @@ class BakedProductName(db.Model):
     def __str__(self):
         return self.name
     
-# Stores a record of each time a baked product is actually baked for sale
 class BakedProduct(db.Model):
+    """
+    Represents a baked product for sale.
+
+    Attributes:
+        id (int): The unique identifier of the baked product.
+        name_id (int): The foreign key to the associated baked product name.
+        quantity (Decimal): The quantity of the baked product available for sale.
+        cost_price (Decimal): The cost price of the baked product.
+        selling_price (Decimal): The selling price of the baked product.
+        date_baked (datetime): The date the baked product was prepared.
+        unit_of_measurement_id (int): The foreign key to the associated unit of measurement for the baked product.
+        ingredients (list): The relationship to the BakedProductIngredient objects.
+        user_id (int): The foreign key to the associated user who added the baked product.
+        user (User): The relationship to the User object.
+
+    Methods:
+        __repr__: Returns a string representation of the BakedProduct object.
+    """
     id = db.Column(db.Integer, primary_key=True)
     name_id = db.Column(db.Integer, db.ForeignKey('baked_product_name.id'), nullable=False)
     quantity = db.Column(db.DECIMAL(precision=8, scale=2), nullable=False)
@@ -148,10 +240,21 @@ class BakedProduct(db.Model):
 
     def __repr__(self):
         return f"BakedProduct('{self.name_id}', '{self.quantity}', '{self.cost_price}', '{self.selling_price}', '{self.date_baked}')"
-
-
-# stores info about stock items(ingredients) used to bake a particular product    
+   
 class BakedProductIngredient(db.Model):
+    """
+    Represents an ingredient used to bake a specific product.
+
+    Attributes:
+        id (int): The unique identifier of the baked product ingredient.
+        baked_product_id (int): The foreign key to the associated baked product.
+        product_id (int): The foreign key to the associated product (ingredient).
+        quantity (Decimal): The quantity of the ingredient used.
+        date_used (datetime): The date the ingredient was used.
+
+    Methods:
+        __repr__: Returns a string representation of the BakedProductIngredient object.
+    """
     id = db.Column(db.Integer, primary_key=True)
     baked_product_id = db.Column(db.Integer, db.ForeignKey('baked_product.id'), nullable=False)
     product_id = db.Column(db.Integer, db.ForeignKey('product.id'), nullable=False)
