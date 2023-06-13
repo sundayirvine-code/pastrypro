@@ -1067,6 +1067,20 @@ from titlecase import titlecase
 @app.route('/create_baked_product', methods=['POST'])
 @login_required
 def create_baked_product():
+    """
+    Create a baked product.
+
+    This route is accessible only to logged-in users via a POST request. It allows the creation
+    of a new baked product. The name of the product is obtained from the form data. The name is
+    cleaned by removing trailing spaces and converting it to title case. It is then checked if
+    the user has already created a baked product with the same name. If so, an error message is returned.
+    Otherwise, a new BakedProductName instance is created and added to the database. The response is a JSON
+    object containing a success message and the details of the created product.
+
+    Returns:
+        - A JSON response containing a success message and the details of the created product.
+          If the creation fails, an error message is returned.
+    """
     if request.method == 'POST':
         try:
             user_id = current_user.id
