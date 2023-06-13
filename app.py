@@ -305,6 +305,69 @@ def internal_server_error(error):
     """
     return render_template('500.html'), 500
 
+# Helper Functions
+def get_category_name(category_id):
+        """
+        Retrieve the name of a category by its ID.
+
+        Args:
+            category_id (int): The ID of the category.
+
+        Returns:
+            str: The name of the category.
+        """
+        with app.app_context():
+            user_id = current_user.id
+            categories = Category.query.filter_by(user_id=user_id).all()
+            category = next((cat for cat in categories if cat.id == category_id), None)
+            return category.name if category else ""
+        
+def get_product_status(quantity):
+    """
+    Determine the status of a product based on its quantity.
+
+    Args:
+        quantity (float): The quantity of the product.
+
+    Returns:
+        str: The status of the product ('Out of Stock', 'Critical', 'Low', 'In Stock').
+    """
+    if quantity <= 0:
+        return 'Out of Stock'
+    elif quantity <= 5 and quantity > 0:
+        return 'Critical'
+    elif quantity <= 10 and quantity > 5:
+        return 'Low'
+    else:
+        return 'In Stock'
+    
+def get_unit_of_measurement_name(unit_of_measurement_id):
+    """
+    Retrieve the name of a unit of measurement by its ID.
+
+    Args:
+        unit_of_measurement_id (int): The ID of the unit of measurement.
+
+    Returns:
+        str: The name of the unit of measurement.
+    """
+    with app.app_context():
+        unit_of_measurement = UnitOfMeasurement.query.get(unit_of_measurement_id)
+        if unit_of_measurement:
+            return unit_of_measurement.name
+        return ''
+
+def get_past_week_dates():
+    """
+    Get the start and end dates of the past week.
+
+    Returns:
+        tuple: A tuple containing the start date and end date of the past week.
+    """
+    end_date = datetime.datetime.now()
+    start_date = end_date - datetime.timedelta(days=7)
+    return start_date, end_date
+
 # Routes
 @app.route('/')
 def home():
@@ -378,35 +441,6 @@ def logout():
     logout_user()
     flash('You have been logged out.', 'info')
     return redirect(url_for('home'))
-
-def get_category_name(category_id):
-        with app.app_context():
-            user_id = current_user.id
-            categories = Category.query.filter_by(user_id=user_id).all()
-            category = next((cat for cat in categories if cat.id == category_id), None)
-            return category.name if category else ""
-        
-def get_product_status(quantity):
-    if quantity <= 0:
-        return 'Out of Stock'
-    elif quantity <= 5 and quantity > 0:
-        return 'Critical'
-    elif quantity <= 10 and quantity > 5:
-        return 'Low'
-    else:
-        return 'In Stock'
-    
-def get_unit_of_measurement_name(unit_of_measurement_id):
-    with app.app_context():
-        unit_of_measurement = UnitOfMeasurement.query.get(unit_of_measurement_id)
-        if unit_of_measurement:
-            return unit_of_measurement.name
-        return ''
-
-def get_past_week_dates():
-    end_date = datetime.datetime.now()
-    start_date = end_date - datetime.timedelta(days=7)
-    return start_date, end_date
 
 @app.route('/analytics')
 @login_required
