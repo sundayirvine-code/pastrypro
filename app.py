@@ -23,8 +23,8 @@ app = Flask(__name__)
 
 # Configuration
 app.config['SECRET_KEY'] = '\xce!\x9e\x04\x00\x03\xdf\x88\xf1\x1b@m\xe2\xc6R\xd80\xf6H\x84\xe0e\xc1\x02'
-app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URI')
-#app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///database.db'
+#app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URI')
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///database.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 login_manager = LoginManager(app)
@@ -448,14 +448,18 @@ def logout():
     flash('You have been logged out.', 'info')
     return redirect(url_for('home'))
 
-@app.route('/analytics')
-@login_required
-def analytics():
-    user_id = current_user.id
-    
-    # Calculate the start and end dates for the past 7 days
-    start_date, end_date = get_past_week_dates()
+def get_top_ingredients(user_id, start_date, end_date):
+    """
+    Retrieve top ingredients used in baked products within a specific time range.
 
+    Args:
+        user_id (int): User ID.
+        start_date (datetime): Start date of the time range.
+        end_date (datetime): End date of the time range.
+
+    Returns:
+        list: List of top ingredients.
+    """
     top_ingredient_ids = db.session.query(
         BakedProductIngredient.product_id,
         func.sum(BakedProductIngredient.quantity).label('total_quantity')
@@ -465,7 +469,6 @@ def analytics():
         func.sum(BakedProductIngredient.quantity).desc()
     ).subquery()
 
-    total_quantity = db.session.query(func.sum(top_ingredient_ids.c.total_quantity)).scalar()
     top_ingredients = db.session.query(
         Product.name,
         top_ingredient_ids.c.total_quantity,
@@ -477,20 +480,52 @@ def analytics():
         Product.user_id == user_id
     ).all()
 
-    # Calculate the percentage and quantity_remaining for each ingredient
+    return top_ingredients
+
+def calculate_ingredient_percentages(top_ingredients):
+    """
+    Calculate the percentage and quantity remaining for each ingredient.
+
+    Args:
+        top_ingredients (list): List of top ingredients.
+
+    Returns:
+        list: List of top ingredients with percentage and quantity remaining.
+    """
     top_ingredients_with_percentage = []
     for ingredient in top_ingredients:
-        name = ingredient[0]
-        quantity = ingredient[1]
-        unit = ingredient[2]
-        quantity_remaining = ingredient[3]
+        name, quantity, unit, quantity_remaining = ingredient
         percentage = round((quantity / (quantity + quantity_remaining)) * 100)
         top_ingredients_with_percentage.append((name, quantity, unit, percentage, quantity_remaining))
 
-    # Most used ingredients (stock items)
+    return top_ingredients_with_percentage
+
+def enumerate_top_ingredients(top_ingredients_with_percentage):
+    """
+    Enumerate the top ingredients with their index.
+
+    Args:
+        top_ingredients_with_percentage (list): List of top ingredients with percentage.
+
+    Returns:
+        list: List of top ingredients with index.
+    """
     top_ingredients_with_index = [(index + 1, ingredient) for index, ingredient in enumerate(top_ingredients_with_percentage)]
 
-    # baked product analytics
+    return top_ingredients_with_index
+
+def get_baked_products(user_id, start_date, end_date):
+    """
+    Retrieve baked products baked by the user within a specific time range.
+
+    Args:
+        user_id (int): User ID.
+        start_date (datetime): Start date of the time range.
+        end_date (datetime): End date of the time range.
+
+    Returns:
+        list: List of baked products.
+    """
     baked_products = db.session.query(
         BakedProduct,
         BakedProductName.name
@@ -501,7 +536,18 @@ def analytics():
         BakedProduct.date_baked.between(start_date, end_date)
     ).order_by(BakedProduct.date_baked).all()
 
-    # Format the query results into a table
+    return baked_products
+
+def format_table_data(baked_products):
+    """
+    Format the baked product data into a table.
+
+    Args:
+        baked_products (list): List of baked products.
+
+    Returns:
+        list: List of dictionaries containing formatted table data.
+    """
     table_data = []
     for index, (baked_product, product_name) in enumerate(baked_products, start=1):
         table_data.append({
@@ -512,6 +558,39 @@ def analytics():
             'Quantity Baked': baked_product.quantity,
             'Date Baked': baked_product.date_baked
         })
+
+    return table_data
+
+
+@app.route('/analytics')
+@login_required
+def analytics():
+    """
+    Display analytics data for the current user.
+
+    Returns:
+        render_template: Renders the 'analytics.html' template with the required data.
+    """
+    user_id = current_user.id
+    
+    # Calculate the start and end dates for the past 7 days
+    start_date, end_date = get_past_week_dates()
+
+    # Query top ingredients used in baked products in the past week
+    top_ingredients = get_top_ingredients(user_id, start_date, end_date)
+
+    # Calculate the percentage and quantity remaining for each ingredient
+    top_ingredients_with_percentage = calculate_ingredient_percentages(top_ingredients)
+
+
+    # Enumerate the top ingredients with their index
+    top_ingredients_with_index = enumerate_top_ingredients(top_ingredients_with_percentage)
+
+    # Query baked products baked in the past week
+    baked_products = get_baked_products(user_id, start_date, end_date)
+
+    # Format the baked product data into a table
+    table_data = format_table_data(baked_products)
 
     # Get all baked products for the specific user
     baked_products = BakedProduct.query.filter_by(user_id=user_id).all()
@@ -546,6 +625,40 @@ def analytics():
                            get_category_name=get_category_name)
 
 
+def get_top_ingredients(start_date, end_date, user_id):
+    """
+    Retrieve the top ingredients based on their quantities within a specified date range.
+
+    Args:
+        start_date (datetime): Start date.
+        end_date (datetime): End date.
+        user_id (int): User ID.
+
+    Returns:
+        list: List of top ingredients.
+    """
+    top_ingredient_ids = db.session.query(
+        BakedProductIngredient.product_id,
+        func.sum(BakedProductIngredient.quantity).label('total_quantity')
+    ).join(BakedProduct).filter(
+        BakedProduct.date_baked.between(start_date, end_date)
+    ).group_by(BakedProductIngredient.product_id).order_by(
+        func.sum(BakedProductIngredient.quantity).desc()
+    ).limit(4).subquery()
+
+    top_ingredients = db.session.query(
+        Product.name,
+        top_ingredient_ids.c.total_quantity,
+        UnitOfMeasurement.name
+    ).join(top_ingredient_ids, Product.id == top_ingredient_ids.c.product_id).join(
+        UnitOfMeasurement, Product.unit_of_measurement_id == UnitOfMeasurement.id
+    ).filter(
+        Product.user_id == user_id
+    ).all()
+
+    return top_ingredients
+
+
 @app.route('/inventory')
 @login_required
 def inventory():
@@ -557,19 +670,7 @@ def inventory():
     # Calculate the start and end dates for the past 7 days
     start_date, end_date = get_past_week_dates()
 
-    top_ingredient_ids = db.session.query(BakedProductIngredient.product_id, func.sum(BakedProductIngredient.quantity).label('total_quantity')) \
-    .join(BakedProduct) \
-    .filter(BakedProduct.date_baked.between(start_date, end_date)) \
-    .group_by(BakedProductIngredient.product_id) \
-    .order_by(func.sum(BakedProductIngredient.quantity).desc()) \
-    .limit(4) \
-    .subquery()
-
-    top_ingredients = db.session.query(Product.name, top_ingredient_ids.c.total_quantity, UnitOfMeasurement.name) \
-    .join(top_ingredient_ids, Product.id == top_ingredient_ids.c.product_id) \
-    .join(UnitOfMeasurement, Product.unit_of_measurement_id == UnitOfMeasurement.id) \
-    .filter(Product.user_id == user_id) \
-    .all()
+    top_ingredients = get_top_ingredients(start_date, end_date, user_id)
 
     
     top_ingredients_with_index = [(index + 1, ingredient) for index, ingredient in enumerate(top_ingredients)]
