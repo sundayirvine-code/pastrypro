@@ -624,7 +624,6 @@ def analytics():
                            get_product_status=get_product_status,
                            get_category_name=get_category_name)
 
-
 def get_top_ingredients(start_date, end_date, user_id):
     """
     Retrieve the top ingredients based on their quantities within a specified date range.
@@ -658,10 +657,18 @@ def get_top_ingredients(start_date, end_date, user_id):
 
     return top_ingredients
 
-
 @app.route('/inventory')
 @login_required
 def inventory():
+    """
+    Render the inventory page.
+
+    This route is accessible to logged-in users only. It retrieves the necessary data to populate the inventory page,
+    including the top ingredients used in the past 7 days, units of measurement, categories, and products owned by the user.
+
+    Returns:
+        HTML: Rendered inventory page template.
+    """
     user_id = current_user.id
     units = UnitOfMeasurement.query.all()
     categories = Category.query.filter_by(user_id=user_id).all()
@@ -686,6 +693,24 @@ def inventory():
 @app.route("/create_product", methods=["POST"])
 @login_required
 def create_product():
+    """
+    Create a new product.
+
+    This route is accessible via POST request and requires the user to be logged in.
+    It expects the following JSON data in the request body:
+    {
+        "name": <product name>,
+        "price": <product price>,
+        "quantity": <product quantity>,
+        "category": <category ID>,
+        "description": <product description>,
+        "unit_id": <unit of measurement ID>,
+        "image": <image URL>
+    }
+
+    Returns:
+        JSON: Response containing the created product information or an error message.
+    """
     user_id = current_user.id
 
     # Retrieve form data
