@@ -1,0 +1,40 @@
+# Python
+*.pyc
+__pycache__/
+
+# Virtual Environment
+venv/
+env/
+
+
+# Editors
+.vscode/
+*.idea/
+*.pyc
+*.swo
+*.swp
+*~
+
+# Temporary/Backup Files
+*.bak
+*.backup
+*.tmp
+
+# Log Files
+*.log
+
+# Compiled Files
+*.exe
+*.dll
+*.so
+*.pyd
+
+# Package Files
+*.egg-info/
+dist/
+build/
+*.egg
+
+# Miscellaneous
+.DS_Store
+Thumbs.db
