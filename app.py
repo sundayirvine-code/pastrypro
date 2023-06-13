@@ -308,10 +308,25 @@ def internal_server_error(error):
 # Routes
 @app.route('/')
 def home():
+    """
+    Render the home page.
+
+    Returns:
+        str: The rendered HTML template for the home page.
+    """
     return render_template('index.html')
 
 @app.route('/signup', methods=['GET', 'POST'])
 def signup():
+    """
+    Handle the signup page.
+
+    If the request method is GET, render the signup form.
+    If the request method is POST, process the form data and create a new user.
+
+    Returns:
+        str: The rendered HTML template for the signup page, with the signup form or flash messages.
+    """
     form = RegistrationForm()
     if form.validate_on_submit():
         try:
@@ -329,6 +344,16 @@ def signup():
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
+    """
+    Handle the login page.
+
+    If the user is already authenticated, redirect to the inventory page.
+    If the request method is GET, render the login form.
+    If the request method is POST, process the form data and authenticate the user.
+
+    Returns:
+        str: The rendered HTML template for the login page, with the login form or flash messages.
+    """
     if current_user.is_authenticated:
         flash('Welcome, Log In successful!', 'success')
         return redirect(url_for('inventory'))
